@@ -1,0 +1,123 @@
+.testimonial-section {
+    padding: 60px 0;
+    width: 90%;
+    background-color: #f8f9fa;
+    overflow-x: hidden;
+}
+
+.testimonial-header {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    margin-bottom: 40px;
+    h2{
+        font-size: 2rem;
+    }
+}
+
+.testimonial-title {
+    font-size: 28px;
+    color: #343a40;
+}
+
+.carousel-container {
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+
+.carousel-track {
+    display: flex;
+    width: calc(350px * 8);
+    animation: scroll 40s linear infinite;
+}
+
+.carousel-container:hover .carousel-track {
+    animation-play-state: paused;
+}
+
+@keyframes scroll {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+.testimonial-box {
+    background-color: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    width: 320px;
+    margin: 0 15px;
+    flex-shrink: 0;
+}
+
+.author-info {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.author-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.author-content-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.author-details {
+    margin-bottom: 8px;
+}
+
+.author-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+    color: #212529;
+}
+
+.author-role {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 0;
+}
+
+.star-rating {
+    color: #ffc107;
+}
+
+.star {
+    font-size: 18px;
+}
+
+.testimonial-quote {
+    font-size: 16px;
+    color: #495057;
+    flex-grow: 1;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    border-top: 1px solid #f1f1f1;
+    padding-top: 15px;
+}
+
+.testimonial-date {
+    font-size: 13px;
+    color: #6c757d;
+    margin-top: auto;
+    text-align: right;
+}

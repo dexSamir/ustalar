@@ -1,0 +1,119 @@
+/* src/components/BurgerMenuOverlay.css */
+
+.burger-overlay {
+  position: fixed;
+  top: 0;
+  /* Sağdan gəlməsi üçün right: 0; soldan gəlməsi üçün left: 0; istifadə edin */
+  left: 0; /* Məsələn, sağdan gəlsin */
+  width: 350px; /* Bütün səhifəni tutmasın, müəyyən bir eni olsun */
+  max-width: 80%; /* Daha kiçik ekranlarda adaptasiya üçün */
+  height: 70%;
+  background-color: rgba(255, 255, 255, 0.9); /* Arxa fon biraz şəffaf olsun (90% ağ) */
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1); /* Kölgə əlavə edirik */
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* İçərisindəki məzmun sola doğru hizalansın */
+  padding: 20px;
+  box-sizing: border-box;
+
+  /* İlkin vəziyyət: ekranın kənarında gizli */
+  transform: translateX(100%); /* Sağdan gəlməsi üçün */
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out, visibility 0.3s;
+}
+
+.burger-overlay.open {
+  transform: translateX(0); /* Ekrana gəlsin */
+  opacity: 1;
+  visibility: visible;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 2.5rem;
+  color: #333;
+  cursor: pointer;
+  align-self: flex-end; /* Sağ üstdəki bağlama düyməsi */
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.overlay-content {
+  width: 100%;
+  /* max-width: 400px; Səhifənin özü 300px olduğu üçün buna ehtiyac yoxdur */
+  margin-top: 20px;
+}
+
+.menu-categories {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-categories li {
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+}
+
+.menu-categories li a { /* 'a' teqi 'span' ilə əvəz olunduğu üçün */
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  text-decoration: none; /* Artıq link deyil, amma görünüşü saxlamaq üçün */
+  color: #333;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #eee;
+  cursor: default; /* Link olmadığı üçün kursor pointer yox, default */
+  transition: background-color 0.2s ease; /* Hover effekti üçün */
+}
+
+.menu-categories li span:hover {
+  background-color: #f0f0f0;
+  border-radius: 4px;
+}
+
+.menu-categories li img {
+  width: 24px;
+  height: 24px;
+  margin-right: 15px;
+}
+
+.menu-categories li a {
+  flex-grow: 1;
+  text-decoration: none;
+  color:#333 ;
+  cursor: pointer;
+}
+
+.menu-categories li .arrow-right {
+  font-size: 1.2rem;
+  margin-left: 10px;
+  color: #999;
+  rotate: -90deg;
+}
+
+/* Kiçik ekranlar üçün responsive tənzimləmələr */
+@media (max-width: 480px) {
+  .burger-overlay {
+    width: 90%; /* Çox kiçik ekranlarda daha çox yer tutsun */
+    padding: 15px;
+  }
+  .close-button {
+    font-size: 2rem;
+  }
+  .menu-categories li span {
+    font-size: 1rem;
+    padding: 10px 0;
+  }
+  .menu-categories li img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+  }
+}
