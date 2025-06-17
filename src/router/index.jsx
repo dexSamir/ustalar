@@ -1,6 +1,6 @@
 import React from "react";
 import { createBrowserRouter } from "react-router-dom";
-import Rey from "../pages/Rey";
+import Rey from "../pages/rey";
 import Register from "../pages/register";
 import Login from "../pages/login";
 import Ecom from "../pages/Ecom";
