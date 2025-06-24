@@ -1,5 +1,14 @@
 import React from "react";
 import { Star, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
+
+const getImageUrl = (path) => {
+  if (!path) return "/placeholder.svg";
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+  return `https://masters-1.onrender.com${path}`;
+};
 
 export default function EcomCard({
   professional,
@@ -9,9 +18,7 @@ export default function EcomCard({
 }) {
   const displayRating = professional.rating?.toFixed(1) || "N/A";
   const displayReviewCount = professional.reviewCount || 0;
-
   const displayTags = professional.tags || [];
-
   const locationText =
     cityNames && cityNames.length > 0 ? cityNames.join(", ") : "Yer yoxdur";
 
@@ -19,10 +26,7 @@ export default function EcomCard({
     <div className="w-[300px] h-[400px] rounded-lg shadow-md overflow-hidden bg-white flex flex-col">
       <div className="relative w-full h-48">
         <img
-          src={
-            professional.profile_image ||
-            "/placeholder.svg?height=192&width=256"
-          }
+          src={getImageUrl(professional.profile_image) || "/placeholder.svg"}
           alt={`${professional.first_name} ${professional.last_name}`}
           className="w-full h-full object-cover rounded-t-lg"
         />
@@ -59,10 +63,12 @@ export default function EcomCard({
           </div>
         )}
         <div className="mt-auto">
-          {" "}
-          <button className="w-full bg-[#1A4862] text-white py-2 rounded-lg font-medium hover:bg-[#1A4862]/90 transition-colors">
-            Ətraflı
-          </button>
+          <Link to={`/reviews/${professional.id}`}>
+            {" "}
+            <button className="w-full bg-[#1A4862] text-white py-2 rounded-lg font-medium hover:bg-[#1A4862]/90 transition-colors">
+              Ətraflı
+            </button>
+          </Link>
         </div>
       </div>
     </div>

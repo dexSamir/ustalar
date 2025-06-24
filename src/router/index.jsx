@@ -1,27 +1,43 @@
 import React from "react";
 import { createBrowserRouter } from "react-router-dom";
-import Rey from "../pages/rey";
+import Rey from "../pages/Rey";
 import Register from "../pages/register";
 import Login from "../pages/login";
 import Ecom from "../pages/Ecom";
 import Home from "../home/All";
 import ReviewPage from "../pages/ReviewPage";
+import ProfilePage from "../profil";
+import Navbar from "../profil-navbar";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
+    children: [
+      {
+        path: "rey",
+        element: <Rey />,
+      },
+      //   {
+      //     path: "profil",
+      //     element: <ProfilePage />,
+      //   },
+      {
+        path: "user/profil",
+        element: <Navbar />,
+      },
+    ],
   },
   {
-    path: "rey",
+    path: "/rey",
     element: <Rey />,
   },
   {
-    path: "ecom",
+    path: "/ecom",
     element: <Ecom />,
   },
   {
-    path: "reviews",
+    path: "/reviews/:masterId",
     element: <ReviewPage />,
   },
   {
@@ -31,5 +47,10 @@ export const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+  },
+
+  {
+    path: "/profil",
+    element: <ProfilePage />,
   },
 ]);

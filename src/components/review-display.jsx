@@ -18,7 +18,7 @@ export default function ReviewDisplay() {
     const fetchReviews = async () => {
       try {
         const response = await fetch(
-          "https://masters-1.onrender.com/api/v1/professionals/1/reviews/"
+          "https://masters-1.onrender.com/api/v1/professionals/53/reviews/"
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -94,7 +94,7 @@ export default function ReviewDisplay() {
 
   if (loading) {
     return (
-      <div className="mx-auto p-6 max-w-[1400px] bg-white rounded-lg shadow-md text-center">
+      <div className="mx-auto p-6 max-w-[1400px] bg-white rounded-lg text-center">
         Rəylər yüklənir...
       </div>
     );
@@ -102,16 +102,17 @@ export default function ReviewDisplay() {
 
   if (error) {
     return (
-      <div className="mx-auto p-6 max-w-[1400px] bg-white rounded-lg shadow-md text-center text-red-500">
-        Rəylər yüklənərkən xəta baş verdi: {error}
+      <div className="mx-auto p-6 max-w-[1400px] bg-white rounded-lg text-center text-red-500">
+        {" "}
+        // Removed shadow-md Rəylər yüklənərkən xəta baş verdi: {error}
       </div>
     );
   }
 
   return (
-    <div className="mx-auto p-6 max-w-[1400px] bg-white rounded-lg shadow-md">
+    <div className="mx-auto p-6 max-w-[1400px] bg-white rounded-lg">
+      {" "}
       <h2 className="font-bold text-2xl mb-6">Reytinq və rəylər</h2>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <div className="flex flex-col items-center justify-center p-4 border rounded-lg bg-gray-50">
           <div className="text-5xl font-bold text-blue-600">
@@ -155,12 +156,16 @@ export default function ReviewDisplay() {
           <h3 className="font-semibold mb-4">Haqqında etiketlər</h3>
           <div className="flex flex-wrap gap-2">
             {POPULAR_TAGS.map((tag) => (
-              <span key={tag}>{tag}</span>
+              <span
+                key={tag}
+                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#cde4f2] text-[#1a4862]"
+              >
+                {tag}
+              </span>
             ))}
           </div>
         </div>
       </div>
-
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-xl">Müştəri Rəyləri</h3>
@@ -201,10 +206,7 @@ export default function ReviewDisplay() {
             </p>
           ) : (
             reviews.map((review) => (
-              <div
-                key={review.id}
-                className="p-4 shadow-sm rounded-lg bg-white"
-              >
+              <div key={review.id} className="p-4 rounded-lg bg-white">
                 {" "}
                 <div className="p-0">
                   {" "}
@@ -263,7 +265,6 @@ export default function ReviewDisplay() {
           )}
         </div>
       </div>
-
       <div className="flex justify-center gap-4 mt-8">
         <button className="px-6 py-3 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-md">
           Hamısına bax ({overallTotal})

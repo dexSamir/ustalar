@@ -1,30 +1,26 @@
-import React, { useRef, useState } from "react";
+import React from "react";
+import { useRef, useState } from "react";
 import { ImageIcon, Star } from "lucide-react";
 
 export default function ReviewForm({ masterId }) {
   const inputref = useRef(null);
   const handleclick = () => inputref.current?.click();
+  const TAGS = [
+    "#Məsuliyyət",
+    "#Səliqə",
+    "#Vaxta nəzarət",
+    "#Ünsiyyətcil",
+    "#Dəqiq",
+    "#Peşəkar",
+    "#Təcrübəli",
+    "#Səmərəli",
+    "#Çevik",
+    "#Səbirli",
+  ];
 
-  const TAG_MAPPING = {
-    "#Məsuliyyət": "responsible",
-    "#Səliqə": "neat",
-    "#Vaxta nəzarət": "time_management",
-    "#Ünsiyyətcil": "communicative",
-    "#Dəqiq": "punctual",
-    "#Peşəkar": "professional",
-    "#Təcrübəli": "experienced",
-    "#Səmərəli": "efficient",
-    "#Çevik": "agile",
-    "#Səbirli": "patient",
-  };
-
-  const TAGS = Object.keys(TAG_MAPPING);
-
-  const [name, setName] = useState("");
   const [rating, setRating] = useState(0);
   const [error, setError] = useState("");
   const [text, setText] = useState("");
-  const [nameError, setNameError] = useState("");
   const [ratingError, setRatingError] = useState("");
   const [textError, setTextError] = useState("");
   const [tagError, setTagError] = useState("");
@@ -39,21 +35,20 @@ export default function ReviewForm({ masterId }) {
     message: "",
   });
 
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [tags, setTags] = useState([]);
   const tagselector = (tag) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter((t) => t !== tag));
+    if (tags.includes(tag)) {
+      setTags(tags.filter((t) => t !== tag));
       setError("");
       setTagError("");
-    } else if (selectedTags.length < 5) {
-      setSelectedTags([...selectedTags, tag]);
+    } else if (tags.length < 5) {
+      setTags([...tags, tag]);
       setError("");
       setTagError("");
     } else {
       setError("5 tagdan artıq seçə bilməzsiniz");
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -70,16 +65,6 @@ export default function ReviewForm({ masterId }) {
 
     let isValid = true;
 
-    if (name.trim() === "") {
-      setNameError("Zəhmət olmasa adınızı daxil edin");
-      isValid = false;
-    } else if (name.length < 2 || name.length > 50) {
-      setNameError("Ad 2-50 simvol aralığında olmalıdır");
-      isValid = false;
-    } else {
-      setNameError("");
-    }
-
     if (rating === 0) {
       setRatingError("Lütfən bir reytinq seçin");
       isValid = false;
@@ -94,7 +79,7 @@ export default function ReviewForm({ masterId }) {
       setTextError("");
     }
 
-    if (selectedTags.length === 0) {
+    if (tags.length === 0) {
       setTagError("Zəhmət olmasa ən azı bir etiket seçin");
       isValid = false;
     } else {
@@ -122,26 +107,21 @@ export default function ReviewForm({ masterId }) {
     setSubmitStatus({ loading: true, success: false, message: "" });
 
     const formData = new FormData();
-    formData.append("username", name);
+    formData.append("name", e.target.name.value);
     formData.append("rating", rating);
-    formData.append("comment", text);
+    formData.append("text", text);
+    formData.append("tags", JSON.stringify(tags));
 
-    Object.keys(TAG_MAPPING).forEach((frontendTag) => {
-      const apiField = TAG_MAPPING[frontendTag];
-      if (selectedTags.includes(frontendTag)) {
-        formData.append(apiField, 5);
-      } else {
-        formData.append(apiField, 1);
-      }
+    images.forEach((image, index) => {
+      formData.append(`images`, image);
     });
 
-    images.forEach((image) => {
-      formData.append("review_images", image, image.name);
-    });
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
 
     const authToken = localStorage.getItem("authToken");
     const headers = {};
-
     if (authToken) {
       headers["Authorization"] = `Bearer ${authToken}`;
     }
@@ -164,10 +144,10 @@ export default function ReviewForm({ masterId }) {
         });
         setRating(0);
         setText("");
-        setSelectedTags([]);
+        setTags([]);
         setImages([]);
         setInputKey(Date.now());
-        setName("");
+        e.target.name.value = "";
         setImageUploadValidationError(false);
       } else {
         const errorData = await response.json();
@@ -195,14 +175,6 @@ export default function ReviewForm({ masterId }) {
   const handleImageChange = (e) => {
     const selectedFiles = Array.from(e.target.files || []);
     const totalImages = [...images, ...selectedFiles];
-
-    const isImage = (file) => file.type.startsWith("image/");
-    if (!selectedFiles.every(isImage)) {
-      setImageError("Yalnız şəkil faylları yükləyə bilərsiniz.");
-      setInputKey(Date.now());
-      setImageUploadValidationError(true);
-      return;
-    }
 
     const oversized = selectedFiles.some((file) => file.size > 5 * 1024 * 1024);
     if (oversized) {
@@ -258,18 +230,9 @@ export default function ReviewForm({ masterId }) {
           type="text"
           id="name"
           name="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
           placeholder="Adınızı qeyd edin"
-          className={`w-full border rounded p-[5px] mb-[30px] focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            nameError ? "border-red-500" : "border-gray-300"
-          }`}
+          className="w-full border border-gray-300 rounded p-[5px] mb-[30px] focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        {nameError && (
-          <p className="text-red-500 text-sm mb-[30px] font-semibold">
-            {nameError}
-          </p>
-        )}
       </div>
       <div className="mb-4">
         <label className="block mb-2 font-semibold">
@@ -368,7 +331,7 @@ export default function ReviewForm({ masterId }) {
               className={`border-2 px-[10px] py-[7px] rounded text-[16px] transition-colors duration-200
                 ${tagError ? "border-red-500" : ""}
                 ${
-                  selectedTags.includes(tag)
+                  tags.includes(tag)
                     ? "border-[#1a4862] bg-[#cde4f2] text-[#1a4862]"
                     : "border-gray-300 bg-[#cde4f2] text-[#1a4862] hover:bg-blue-100"
                 }`}
