@@ -1,6 +1,5 @@
 import React from "react";
 import { createBrowserRouter } from "react-router-dom";
-import Rey from "../pages/Rey";
 import Register from "../pages/register";
 import Login from "../pages/login";
 import Ecom from "../pages/Ecom";
@@ -14,10 +13,6 @@ export const router = createBrowserRouter([
     path: "/",
     element: <Home />,
     children: [
-      {
-        path: "rey",
-        element: <Rey />,
-      },
       //   {
       //     path: "profil",
       //     element: <ProfilePage />,
@@ -27,10 +22,6 @@ export const router = createBrowserRouter([
         element: <Navbar />,
       },
     ],
-  },
-  {
-    path: "/rey",
-    element: <Rey />,
   },
   {
     path: "/ecom",
