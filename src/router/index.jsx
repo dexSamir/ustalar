@@ -7,6 +7,7 @@ import Home from "../home/All";
 import ReviewPage from "../pages/ReviewPage";
 import ProfilePage from "../profil";
 import Navbar from "../profil-navbar";
+import Review from "../components/review";
 
 export const router = createBrowserRouter([
   {
@@ -22,6 +23,10 @@ export const router = createBrowserRouter([
         element: <Navbar />,
       },
     ],
+  },
+  {
+    path: "/rey/:masterId", 
+    element: <Review />,
   },
   {
     path: "/ecom",
