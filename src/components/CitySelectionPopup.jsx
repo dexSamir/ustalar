@@ -1,239 +1,266 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { SlClose } from "react-icons/sl";
-import { IoIosArrowForward } from "react-icons/io";
+import React, { useState, useEffect } from "react";
 
-const CitySelectionPopup = ({ cities, onSendData }) => {
-  const [citiesFromParent, setCitiesFromParent] = useState([]);
-  const [searchedCities, setSearchedCities] = useState([]);
-  const [selectedCities, setSelectedCities] = useState([]);
-  const [cityDistincs, setCityDistincs] = useState({});
-  const [selectedDistricts, setSelectedDistricts] = useState([]);
+export default function CitySelectionPopup({
+  onSendData,
+  cities: initialCitiesForShow,
+}) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCities, setSelectedCities] = useState(
+    initialCitiesForShow.cities || []
+  );
+  const [selectedDistricts, setSelectedDistricts] = useState(
+    initialCitiesForShow.distinc || []
+  );
+  const [allCities, setAllCities] = useState([]);
+  const [allDistricts, setAllDistricts] = useState([]);
+  const [bakuDistricts, setBakuDistricts] = useState([]);
+  const [isBakuOpen, setIsBakuOpen] = useState(false);
 
-  const getCities = () => {
-    axios
-      .get("https://masters-1.onrender.com/api/v1/cities/")
-      .then((response) => {
-        const sorted = response.data.sort((a, b) => a.id === 1 ? -1 : b.id === 1 ? 1 : 0);
-        setCitiesFromParent(sorted);
-        setSearchedCities(sorted);
+  useEffect(() => {
+    fetch("https://api.peshekar.online/api/v1/cities/")
+      .then((res) => res.json())
+      .then((data) => {
+        setAllCities(data);
       })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  };
-
-  const toggleDistrict = (district, cityId) => {
-    const exists = selectedDistricts.some(
-      (d) => d.id === district.id && d.cityId === cityId
-    );
-
-    if (exists) {
-      setSelectedDistricts((prev) =>
-        prev.filter((d) => !(d.id === district.id && d.cityId === cityId))
+      .catch((error) =>
+        console.error("Şəhərləri yükləmək mümkün olmadı:", error)
       );
-    } else {
-      setSelectedDistricts((prev) => [...prev, { ...district, cityId }]);
-    }
-  };
 
-  useEffect(() => {
-    getCities();
-  }, []);
-
-  const getDistincs = () => {
-    axios
-      .get("https://masters-1.onrender.com/api/v1/cities/1/districts")
-      .then((response) => {
-        setCityDistincs((prev) => ({
-          ...prev,
-          1: response.data,
-        }));
+    fetch("https://api.peshekar.online/api/v1/districts/")
+      .then((res) => res.json())
+      .then((data) => {
+        const baku = data.find((item) => item.display_name === "Bakı");
+        if (baku && baku.sub_districts) {
+          setBakuDistricts(baku.sub_districts);
+        }
+        const otherDistricts = data.filter(
+          (item) => item.display_name !== "Bakı"
+        );
+        setAllDistricts(otherDistricts);
       })
-      .catch((error) => {
-        console.error("Error fetching districts:", error);
-      });
-  };
-
-  useEffect(() => {
-    getDistincs();
+      .catch((error) =>
+        console.error("Rayonları yükləmək mümkün olmadı:", error)
+      );
   }, []);
 
-  const deleteSelected = (index) => {
-    setSelectedCities((prev) => [
-      ...prev.slice(0, index),
-      ...prev.slice(index + 1),
-    ]);
+  const normalizeAz = (str) => {
+    return str
+      .toLowerCase()
+      .replace(/ə/g, "e")
+      .replace(/ı/g, "i")
+      .replace(/ö/g, "o")
+      .replace(/ü/g, "u")
+      .replace(/ç/g, "c")
+      .replace(/ş/g, "s")
+      .replace(/ğ/g, "g");
   };
 
-  const sendDataToParent = () => {
-    const citiesForSendParent = selectedCities.map((item) => item.id);
-    const districtsForSendParent = selectedDistricts.map((item) => item.id);
+  const filteredAllCities = allCities.filter((city) =>
+    normalizeAz(city.display_name).includes(normalizeAz(searchTerm))
+  );
 
+  const filteredAllDistricts = allDistricts.filter((district) =>
+    normalizeAz(district.display_name).includes(normalizeAz(searchTerm))
+  );
+
+  const filteredBakuDistricts = bakuDistricts.filter((district) =>
+    normalizeAz(district.display_name).includes(normalizeAz(searchTerm))
+  );
+
+  const handleCityToggle = (city) => {
+    setSelectedCities((prev) =>
+      prev.some((c) => c.id === city.id)
+        ? prev.filter((c) => c.id !== city.id)
+        : [...prev, city]
+    );
+  };
+
+  const handleDistrictToggle = (district) => {
+    setSelectedDistricts((prev) =>
+      prev.some((d) => d.id === district.id)
+        ? prev.filter((d) => d.id !== district.id)
+        : [...prev, district]
+    );
+  };
+
+  const handleConfirm = () => {
     onSendData({
-      cities: citiesForSendParent,
-      districts: districtsForSendParent,
+      selectedCitiesForShow: selectedCities,
+      selectedDistrictsForShow: selectedDistricts,
     });
   };
 
-  const searchCities = (e) => {
-    const { value } = e.target;
-    value.length > 0
-      ? setSearchedCities(
-          citiesFromParent.filter((x) =>
-            x.display_name.toLowerCase().includes(value.toLowerCase())
-          )
-        )
-      : setSearchedCities(citiesFromParent);
+  const handleClose = () => {
+    onSendData({
+      selectedCitiesForShow: initialCitiesForShow.cities,
+      selectedDistrictsForShow: initialCitiesForShow.distinc,
+    });
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full rounded-2xl p-6">
-      <div className="flex flex-col items-center w-[30%] m-auto">
-        <h2 className="text-2xl font-bold text-white mb-4 text-center">
-          Fəaliyyət ərazisi seçin
+    <div className="p-6 bg-white rounded-lg shadow-lg flex flex-col h-full">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-[#1A4862]">
+          Fəaliyyət göstərdiyi ərazi
         </h2>
-        <div className="w-full flex">
-          <div className="w-[15%] bg-white flex justify-center items-center rounded-tl-md rounded-bl-md">
-            <img src="../../public/search-normal.svg" alt="" />
-          </div>
-          <input
-            type="text"
-            placeholder="Şəhər və ya rayon axtar"
-            onInput={searchCities}
-            className="w-[85%] px-4 py-2 rounded-tr-md rounded-br-md border border-l-0 bg-white  border-gray-300 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
+        <button
+          onClick={handleClose}
+          className="text-gray-500 hover:text-gray-800 text-2xl font-bold"
+        >
+          &times;
+        </button>
       </div>
 
-      <div className="flex gap-4 w-full h-[80%] rounded-2xl p-6">
-        <div className="w-[70%] h-full">
-          <div className="bg-white rounded-lg p-4 h-full overflow-y-scroll">
-            <div className="grid grid-cols-3 gap-x-4 gap-y-4">
-              {searchedCities.map((item) => (
-                <div key={item.id} className="break-inside-avoid">
-                  <div className="flex items-center flex-wrap">
-                    <input
-                      type="checkbox"
-                      id={`city-${item.id}`}
-                      checked={selectedCities.some((c) => c.id === item.id)}
-                      onChange={() => {
-                        if (selectedCities.some((c) => c.id === item.id)) {
-                          setSelectedCities((prev) =>
-                            prev.filter((i) => i.id !== item.id)
-                          );
-                        } else {
-                          setSelectedCities((prev) => [...prev, item]);
-                        }
-                      }}
-                      className="accent-blue-500 w-4 h-4"
-                    />
-                    <label
-                      htmlFor={`city-${item.id}`}
-                      className="ml-2 text-cyan-900 font-semibold"
-                    >
-                      {item.display_name}
-                    </label>
-                  </div>
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Şəhər və ya rayon axtar..."
+          className="w-full p-2 border border-[#C3C8D1] rounded-lg outline-none text-[#1A4862] font-semibold"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
 
-                  {item.id === 1 && cityDistincs[1] && (
-                    <div className="mt-2 ml-6 flex flex-col gap-1">
-                      {cityDistincs[1].map((district) => (
-                        <div key={district.id} className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id={`district-${district.id}`}
-                            checked={selectedDistricts.some(
-                              (d) => d.id === district.id
-                            )}
-                            onChange={() => toggleDistrict(district, 1)}
-                            className="accent-blue-400 w-4 h-4"
-                          />
-                          <label
-                            htmlFor={`district-${district.id}`}
-                            className="ml-2 text-cyan-800"
-                          >
-                            {district.display_name}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="w-[30%] h-full flex flex-col justify-between">
-          <div className="text-white">
-            <h3 className="text-lg font-semibold mb-2">Seçilmiş ərazilər :</h3>
-            <div className="flex flex-wrap gap-2 max-h-[300px] overflow-auto pr-2">
-              {selectedCities.map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-white text-cyan-900 rounded-2xl w-max px-3 py-1 flex items-center shadow-sm"
-                >
-                  <span>{item.display_name}</span>
-                  <SlClose
-                    className="ml-2 cursor-pointer text-gray-500 hover:text-red-500"
-                    onClick={() => deleteSelected(index)}
-                  />
-                </div>
-              ))}
-              {selectedDistricts.map((district) => (
-                <div
-                  key={`district-${district.id}`}
-                  className="bg-white text-cyan-900 rounded-2xl w-max px-3 py-1 flex items-center shadow-sm"
-                >
-                  <span>{district.display_name}</span>
-                  <SlClose
-                    className="ml-2 cursor-pointer text-gray-500 hover:text-red-500"
-                    onClick={() =>
-                      setSelectedDistricts((prev) =>
-                        prev.filter((d) => d.id !== district.id)
-                      )
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-4 mt-4">
-            <button
-              onClick={() => {
-                setSelectedCities([]);
-                setSelectedDistricts([]);
-              }}
-              className="bg-white text-gray-700 px-6 py-3 rounded-lg shadow hover:bg-gray-100 flex items-center gap-4"
+      <div className="flex-grow overflow-y-auto pr-2">
+        {bakuDistricts.length > 0 && (
+          <div className="mb-4">
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => setIsBakuOpen(!isBakuOpen)}
             >
-              <span>Sıfırla</span>
+              <input
+                type="checkbox"
+                id="baku-city"
+                checked={
+                  selectedCities.some((c) => c.display_name === "Bakı") ||
+                  selectedDistricts.some((d) =>
+                    bakuDistricts.some((bd) => bd.id === d.id)
+                  )
+                }
+                onChange={() => {
+                  const bakuCity = allCities.find(
+                    (c) => c.display_name === "Bakı"
+                  );
+                  if (bakuCity) {
+                    handleCityToggle(bakuCity);
+                  }
+                  if (
+                    selectedDistricts.some((d) =>
+                      bakuDistricts.some((bd) => bd.id === d.id)
+                    )
+                  ) {
+                    setSelectedDistricts((prev) =>
+                      prev.filter(
+                        (d) => !bakuDistricts.some((bd) => bd.id === d.id)
+                      )
+                    );
+                  } else {
+                    setSelectedDistricts((prev) => [
+                      ...prev,
+                      ...bakuDistricts.filter(
+                        (bd) => !prev.some((p) => p.id === bd.id)
+                      ),
+                    ]);
+                  }
+                }}
+              />
+              <label htmlFor="baku-city" className="font-bold text-[#1A4862]">
+                Bakı
+              </label>
               <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
+                className={`w-4 h-4 transition-transform ${
+                  isBakuOpen ? "rotate-180" : ""
+                }`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
               >
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22"
+                  fillRule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                  clipRule="evenodd"
                 />
               </svg>
-            </button>
-            <button
-              onClick={sendDataToParent}
-              className="bg-cyan-900 flex items-center justify-center text-white px-8 py-3 rounded-lg shadow hover:bg-blue-800"
-            >
-              <span>Tamamla</span> <IoIosArrowForward className="mt-[5px]" />
-            </button>
+            </div>
+            {isBakuOpen && (
+              <div className="ml-4 mt-2 grid grid-cols-2 gap-2">
+                {filteredBakuDistricts.map((district) => (
+                  <div key={district.id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`district-${district.id}`}
+                      checked={selectedDistricts.some(
+                        (d) => d.id === district.id
+                      )}
+                      onChange={() => handleDistrictToggle(district)}
+                    />
+                    <label htmlFor={`district-${district.id}`}>
+                      {district.display_name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        )}
+
+        {/* Other cities */}
+        {filteredAllCities.length > 0 && (
+          <div className="mb-4">
+            <h3 className="font-bold text-[#1A4862] mb-2">Digər Şəhərlər</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {filteredAllCities.map((city) => (
+                <div key={city.id} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`city-${city.id}`}
+                    checked={selectedCities.some((c) => c.id === city.id)}
+                    onChange={() => handleCityToggle(city)}
+                  />
+                  <label htmlFor={`city-${city.id}`}>{city.display_name}</label>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {filteredAllDistricts.length > 0 && (
+          <div className="mb-4">
+            <h3 className="font-bold text-[#1A4862] mb-2">Digər Rayonlar</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {filteredAllDistricts.map((district) => (
+                <div key={district.id} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`other-district-${district.id}`}
+                    checked={selectedDistricts.some(
+                      (d) => d.id === district.id
+                    )}
+                    onChange={() => handleDistrictToggle(district)}
+                  />
+                  <label htmlFor={`other-district-${district.id}`}>
+                    {district.display_name}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 flex justify-end gap-3">
+        <button
+          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+          onClick={handleClose}
+        >
+          Ləğv et
+        </button>
+        <button
+          className="px-6 py-2 bg-[#1A4862] text-white rounded-lg hover:bg-[#255C80] transition-colors"
+          onClick={handleConfirm}
+        >
+          Təsdiqlə
+        </button>
       </div>
     </div>
   );
-};
-
-export default CitySelectionPopup;
+}
