@@ -7,7 +7,7 @@ const Card = () => {
   return (
     <section className="component-container">
       <div className="categories-hero">
-        <h2 style={{fontSize: "2rem"}}>Ustalarimiz</h2>
+        <h2 style={{fontSize: "2rem"}}>Elanlar</h2>
         <a href="#" className="see-more-link">
           <span>Daha Çox</span>
           <img src={arrow} alt="arrow-right" className="arrow-icon" />

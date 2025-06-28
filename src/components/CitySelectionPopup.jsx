@@ -1,47 +1,38 @@
-import React, { useState, useEffect } from "react";
+"use client"
 
-export default function CitySelectionPopup({
-  onSendData,
-  cities: initialCitiesForShow,
-}) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCities, setSelectedCities] = useState(
-    initialCitiesForShow.cities || []
-  );
-  const [selectedDistricts, setSelectedDistricts] = useState(
-    initialCitiesForShow.distinc || []
-  );
-  const [allCities, setAllCities] = useState([]);
-  const [allDistricts, setAllDistricts] = useState([]);
-  const [bakuDistricts, setBakuDistricts] = useState([]);
-  const [isBakuOpen, setIsBakuOpen] = useState(false);
+import React, { useState, useEffect } from "react"
+
+export default function CitySelectionPopup({ onSendData, cities: initialCitiesForShow }) {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCities, setSelectedCities] = useState(initialCitiesForShow.cities || [])
+  const [selectedDistricts, setSelectedDistricts] = useState(initialCitiesForShow.distinc || [])
+  const [allCities, setAllCities] = useState([])
+  const [allDistricts, setAllDistricts] = useState([])
+  const [bakuDistricts, setBakuDistricts] = useState([])
+  const [isBakuOpen, setIsBakuOpen] = useState(false)
 
   useEffect(() => {
+    // Fetch all cities
     fetch("https://api.peshekar.online/api/v1/cities/")
       .then((res) => res.json())
       .then((data) => {
-        setAllCities(data);
+        setAllCities(data)
       })
-      .catch((error) =>
-        console.error("Şəhərləri yükləmək mümkün olmadı:", error)
-      );
+      .catch((error) => console.error("Şəhərləri yükləmək mümkün olmadı:", error))
 
+    // Fetch all districts and separate Baku districts
     fetch("https://api.peshekar.online/api/v1/districts/")
       .then((res) => res.json())
       .then((data) => {
-        const baku = data.find((item) => item.display_name === "Bakı");
+        const baku = data.find((item) => item.display_name === "Bakı")
         if (baku && baku.sub_districts) {
-          setBakuDistricts(baku.sub_districts);
+          setBakuDistricts(baku.sub_districts)
         }
-        const otherDistricts = data.filter(
-          (item) => item.display_name !== "Bakı"
-        );
-        setAllDistricts(otherDistricts);
+        const otherDistricts = data.filter((item) => item.display_name !== "Bakı")
+        setAllDistricts(otherDistricts)
       })
-      .catch((error) =>
-        console.error("Rayonları yükləmək mümkün olmadı:", error)
-      );
-  }, []);
+      .catch((error) => console.error("Rayonları yükləmək mümkün olmadı:", error))
+  }, [])
 
   const normalizeAz = (str) => {
     return str
@@ -52,61 +43,50 @@ export default function CitySelectionPopup({
       .replace(/ü/g, "u")
       .replace(/ç/g, "c")
       .replace(/ş/g, "s")
-      .replace(/ğ/g, "g");
-  };
+      .replace(/ğ/g, "g")
+  }
 
-  const filteredAllCities = allCities.filter((city) =>
-    normalizeAz(city.display_name).includes(normalizeAz(searchTerm))
-  );
+  const filteredAllCities = allCities.filter((city) => normalizeAz(city.display_name).includes(normalizeAz(searchTerm)))
 
   const filteredAllDistricts = allDistricts.filter((district) =>
-    normalizeAz(district.display_name).includes(normalizeAz(searchTerm))
-  );
+    normalizeAz(district.display_name).includes(normalizeAz(searchTerm)),
+  )
 
   const filteredBakuDistricts = bakuDistricts.filter((district) =>
-    normalizeAz(district.display_name).includes(normalizeAz(searchTerm))
-  );
+    normalizeAz(district.display_name).includes(normalizeAz(searchTerm)),
+  )
 
   const handleCityToggle = (city) => {
     setSelectedCities((prev) =>
-      prev.some((c) => c.id === city.id)
-        ? prev.filter((c) => c.id !== city.id)
-        : [...prev, city]
-    );
-  };
+      prev.some((c) => c.id === city.id) ? prev.filter((c) => c.id !== city.id) : [...prev, city],
+    )
+  }
 
   const handleDistrictToggle = (district) => {
     setSelectedDistricts((prev) =>
-      prev.some((d) => d.id === district.id)
-        ? prev.filter((d) => d.id !== district.id)
-        : [...prev, district]
-    );
-  };
+      prev.some((d) => d.id === district.id) ? prev.filter((d) => d.id !== district.id) : [...prev, district],
+    )
+  }
 
   const handleConfirm = () => {
     onSendData({
       selectedCitiesForShow: selectedCities,
       selectedDistrictsForShow: selectedDistricts,
-    });
-  };
+    })
+  }
 
   const handleClose = () => {
     onSendData({
       selectedCitiesForShow: initialCitiesForShow.cities,
       selectedDistrictsForShow: initialCitiesForShow.distinc,
-    });
-  };
+    })
+  }
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg flex flex-col h-full">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-[#1A4862]">
-          Fəaliyyət göstərdiyi ərazi
-        </h2>
-        <button
-          onClick={handleClose}
-          className="text-gray-500 hover:text-gray-800 text-2xl font-bold"
-        >
+        <h2 className="text-2xl font-bold text-[#1A4862]">Fəaliyyət göstərdiyi ərazi</h2>
+        <button onClick={handleClose} className="text-gray-500 hover:text-gray-800 text-2xl font-bold">
           &times;
         </button>
       </div>
@@ -122,45 +102,31 @@ export default function CitySelectionPopup({
       </div>
 
       <div className="flex-grow overflow-y-auto pr-2">
+        {/* Baku and its districts */}
         {bakuDistricts.length > 0 && (
           <div className="mb-4">
-            <div
-              className="flex items-center gap-2 cursor-pointer"
-              onClick={() => setIsBakuOpen(!isBakuOpen)}
-            >
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setIsBakuOpen(!isBakuOpen)}>
               <input
                 type="checkbox"
                 id="baku-city"
                 checked={
                   selectedCities.some((c) => c.display_name === "Bakı") ||
-                  selectedDistricts.some((d) =>
-                    bakuDistricts.some((bd) => bd.id === d.id)
-                  )
+                  selectedDistricts.some((d) => bakuDistricts.some((bd) => bd.id === d.id))
                 }
                 onChange={() => {
-                  const bakuCity = allCities.find(
-                    (c) => c.display_name === "Bakı"
-                  );
+                  // Toggle Baku city itself if it exists in allCities
+                  const bakuCity = allCities.find((c) => c.display_name === "Bakı")
                   if (bakuCity) {
-                    handleCityToggle(bakuCity);
+                    handleCityToggle(bakuCity)
                   }
-                  if (
-                    selectedDistricts.some((d) =>
-                      bakuDistricts.some((bd) => bd.id === d.id)
-                    )
-                  ) {
-                    setSelectedDistricts((prev) =>
-                      prev.filter(
-                        (d) => !bakuDistricts.some((bd) => bd.id === d.id)
-                      )
-                    );
+                  // Toggle all Baku districts
+                  if (selectedDistricts.some((d) => bakuDistricts.some((bd) => bd.id === d.id))) {
+                    setSelectedDistricts((prev) => prev.filter((d) => !bakuDistricts.some((bd) => bd.id === d.id)))
                   } else {
                     setSelectedDistricts((prev) => [
                       ...prev,
-                      ...bakuDistricts.filter(
-                        (bd) => !prev.some((p) => p.id === bd.id)
-                      ),
-                    ]);
+                      ...bakuDistricts.filter((bd) => !prev.some((p) => p.id === bd.id)),
+                    ])
                   }
                 }}
               />
@@ -168,9 +134,7 @@ export default function CitySelectionPopup({
                 Bakı
               </label>
               <svg
-                className={`w-4 h-4 transition-transform ${
-                  isBakuOpen ? "rotate-180" : ""
-                }`}
+                className={`w-4 h-4 transition-transform ${isBakuOpen ? "rotate-180" : ""}`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -188,14 +152,10 @@ export default function CitySelectionPopup({
                     <input
                       type="checkbox"
                       id={`district-${district.id}`}
-                      checked={selectedDistricts.some(
-                        (d) => d.id === district.id
-                      )}
+                      checked={selectedDistricts.some((d) => d.id === district.id)}
                       onChange={() => handleDistrictToggle(district)}
                     />
-                    <label htmlFor={`district-${district.id}`}>
-                      {district.display_name}
-                    </label>
+                    <label htmlFor={`district-${district.id}`}>{district.display_name}</label>
                   </div>
                 ))}
               </div>
@@ -223,6 +183,7 @@ export default function CitySelectionPopup({
           </div>
         )}
 
+        {/* Other districts (if any, not part of Baku) */}
         {filteredAllDistricts.length > 0 && (
           <div className="mb-4">
             <h3 className="font-bold text-[#1A4862] mb-2">Digər Rayonlar</h3>
@@ -232,14 +193,10 @@ export default function CitySelectionPopup({
                   <input
                     type="checkbox"
                     id={`other-district-${district.id}`}
-                    checked={selectedDistricts.some(
-                      (d) => d.id === district.id
-                    )}
+                    checked={selectedDistricts.some((d) => d.id === district.id)}
                     onChange={() => handleDistrictToggle(district)}
                   />
-                  <label htmlFor={`other-district-${district.id}`}>
-                    {district.display_name}
-                  </label>
+                  <label htmlFor={`other-district-${district.id}`}>{district.display_name}</label>
                 </div>
               ))}
             </div>
@@ -262,5 +219,5 @@ export default function CitySelectionPopup({
         </button>
       </div>
     </div>
-  );
+  )
 }

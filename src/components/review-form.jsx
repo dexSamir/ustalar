@@ -128,7 +128,11 @@ export default function ReviewForm({ masterId }) {
 
     Object.keys(TAG_MAPPING).forEach((frontendTag) => {
       const apiField = TAG_MAPPING[frontendTag];
-      formData.append(apiField, selectedTags.includes(frontendTag));
+      if (selectedTags.includes(frontendTag)) {
+        formData.append(apiField, 5);
+      } else {
+        formData.append(apiField, 1);
+      }
     });
 
     images.forEach((image) => {
@@ -144,7 +148,7 @@ export default function ReviewForm({ masterId }) {
 
     try {
       const response = await fetch(
-        `https://api.peshekar.online/api/v1/professionals/${masterId}/reviews/create/`,
+        `https://masters-1.onrender.com/api/v1/professionals/${masterId}/reviews/create/`,
         {
           method: "POST",
           headers: headers,
@@ -308,11 +312,11 @@ export default function ReviewForm({ masterId }) {
         </label>
         <div
           className={`w-48 h-48 border-dashed border-[3px] rounded-lg flex flex-col items-center justify-center mb-[50px] cursor-pointer text-gray-500 hover:border-blue-500 hover:text-blue-500 transition-colors
-          ${
-            imageUploadValidationError
-              ? "border-red-500 text-red-500"
-              : "border-gray-300"
-          }`}
+            ${
+              imageUploadValidationError
+                ? "border-red-500 text-red-500"
+                : "border-gray-300"
+            }`}
           onClick={handleclick}
         >
           <span className="mb-1">Şəkil əlavə edin</span>
@@ -362,12 +366,12 @@ export default function ReviewForm({ masterId }) {
               type="button"
               onClick={() => tagselector(tag)}
               className={`border-2 px-[10px] py-[7px] rounded text-[16px] transition-colors duration-200
-              ${tagError ? "border-red-500" : ""}
-              ${
-                selectedTags.includes(tag)
-                  ? "border-[#1a4862] bg-[#cde4f2] text-[#1a4862]"
-                  : "border-gray-300 bg-[#cde4f2] text-[#1a4862] hover:bg-blue-100"
-              }`}
+                ${tagError ? "border-red-500" : ""}
+                ${
+                  selectedTags.includes(tag)
+                    ? "border-[#1a4862] bg-[#cde4f2] text-[#1a4862]"
+                    : "border-gray-300 bg-[#cde4f2] text-[#1a4862] hover:bg-blue-100"
+                }`}
               key={tag}
             >
               {tag}

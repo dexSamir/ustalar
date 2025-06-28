@@ -1,4 +1,3 @@
-// import profilSekil from "./img.png";
 import { useNavigate } from "react-router-dom";
 import { IoIosArrowBack } from "react-icons/io";
 import { IoIosArrowForward } from "react-icons/io";
@@ -9,8 +8,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import CitySelectionPopup from "../../components/CitySelectionPopup";
 import axios from "axios";
-import { format, parse ,subYears , isValid} from "date-fns";
-import Swal from "sweetalert";
+import { format, parse, subYears, parseISO, isValid } from "date-fns";
+import Swal from "sweetalert2";
+import backgroundpng from "../../assets/img.png";
 
 const cities = [
   "Ağcabədi",
@@ -94,10 +94,10 @@ function Register() {
   };
 
   const [formData, setFormData] = useState({
-    first_name: "", 
-    last_name: "", 
-    birth_date: "", 
-    mobile_number: "", 
+    first_name: "", // ⬅️ dəyişdi
+    last_name: "", // ⬅️ dəyişdi
+    birth_date: "", // ⬅️ dəyişdi
+    mobile_number: "", // ⬅️ dəyişdi
     password: "",
     password2: "",
     gender: "",
@@ -145,17 +145,19 @@ function Register() {
   };
 
   const handleLanguageChange = (e) => {
-    const value = parseInt(e.target.value); 
+    const value = parseInt(e.target.value); // string gəlir, rəqəmə çeviririk
     const isChecked = e.target.checked;
 
     setFormData((prevData) => {
       let updatedLanguages = [...prevData.languages];
 
       if (isChecked) {
+        // əgər seçilibsə və artıq yoxdursa, əlavə et
         if (!updatedLanguages.includes(value)) {
           updatedLanguages.push(value);
         }
       } else {
+        // əgər seçilməyibsə, sil
         updatedLanguages = updatedLanguages.filter((id) => id !== value);
       }
       // console.log("Yeni dillər:", updatedLanguages);
@@ -164,10 +166,13 @@ function Register() {
   };
   const [showPopup, setShowPopup] = useState(false);
 
+  // Açma funksiyası
   const openPopup = () => {
     setShowPopup(true);
+    document.body.style.overflow="hidden"
   };
 
+  // Bağlama funksiyası
   const closePopup = () => {
     setShowPopup(false);
   };
@@ -194,6 +199,61 @@ function Register() {
     }));
   };
 
+  const collectStepErrors = () => {
+    const errors = {};
+
+    if (step === 1) {
+      if (isEmpty(formData.first_name))
+        errors.first_name = "Zəhmət olmasa, məlumatları daxil edin.";
+      if (isEmpty(formData.last_name))
+        errors.last_name = "Zəhmət olmasa, məlumatları daxil edin.";
+      if (isEmpty(formData.birth_date))
+        errors.birth_date = "Zəhmət olmasa, məlumatları daxil edin.";
+      if (isEmpty(formData.mobile_number))
+        errors.mobile_number = "Zəhmət olmasa, məlumatları daxil edin.";
+      if (isEmpty(formData.password))
+        errors.password = "Zəhmət olmasa, məlumatları daxil edin.";
+      if (isEmpty(formData.password2))
+        errors.password2 = "Zəhmət olmasa, məlumatları daxil edin.";
+      if (
+        !isEmpty(formData.password) &&
+        !isEmpty(formData.password2) &&
+        formData.password !== formData.password2
+      )
+        errors.password2 = "Zəhmət olmasa, məlumatları daxil edin.";
+      if (isEmpty(formData.gender))
+        errors.gender = "Zəhmət olmasa, seçim edin.";
+    }
+
+    if (step === 2) {
+      if (isEmpty(formData.profession_area.trim() == ""))
+        errors.profession_area = "Zəhmət olmasa, peşə sahəsi seçin.";
+      if (isEmpty(formData.profession_speciality.trim() == ""))
+        errors.profession_speciality = "Zəhmət olmasa, peşə ixtisası seçin.";
+      if (isEmpty(formData.experience_years))
+        errors.experience_years = "Zəhmət olmasa, iş təcrübəsini daxil edin.";
+      if (isEmpty(formData.cities.length === 0))
+        errors.cities = "Fəaliyyət ərazisi seçilməlidir.";
+    }
+
+    if (step === 3) {
+      if (isEmpty(formData.education))
+        errors.education = "Zəhmət olmasa, təhsil səviyyəsini seçin.";
+      if (isEmpty(formData.educationField))
+        errors.educationField = "Zəhmət olmasa, təhsil ixtisasını daxil edin.";
+      if (isEmpty(formData.about))
+        errors.about = "Haqqınızda məlumat daxil edin";
+      if (isEmpty(formData.profile_image))
+        errors.profile_image = "Profil şəkli əlavə olunmalıdır";
+      if (isEmpty(formData.languages.length === 0))
+        errors.languages = "Zəhmət olmasa, dil biliklərinizi seçin.";
+    }
+
+    console.log(errors);
+    setFormDataErrors(errors);
+
+    return Object.keys(errors).length === 0;
+  };
   const validateForm = () => {
     const errors = {};
 
@@ -243,166 +303,167 @@ function Register() {
 
     return Object.keys(errors).length === 0;
   };
-const handleNext = async (e) => {
-  e.preventDefault();
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    const allErrors = collectStepErrors(step, formData); // heç state dəyişmir
+    setFormDataErrors((prev) => ({
+      ...prev,
+      [name]: allErrors[name] ?? "",
+    }));
+  };
 
-  if (!formData.mobile_number || formData.mobile_number.length !== 9) {
-    Swal.fire({
-      icon: "warning",
-      title: "Mobil nömrə düzgün deyil",
-      text: "Zəhmət olmasa, 9 rəqəmdən ibarət mobil nömrə daxil edin.",
-      confirmButtonText: "Başa düşdüm",
-      confirmButtonColor: "#1A4862",
-    });
-    return;
-  }
-
-  const fullNumber = `${formData.mobile_number}`;
-
-  try {
-    const res = await fetch("https://masters-1.onrender.com/api/v1/check-phone/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone_number: fullNumber }),
-    });
-
-    const data = await res.json();
-    console.log("Server cavabı:", data);
-
-    if (res.status === 200 && !data?.mobile_number) {
-      setStep(2); 
-    } else {
-      Swal.fire({
-        icon: "warning",
-        title: "Nömrə ilə bağlı problem var",
-        text: Array.isArray(data?.mobile_number)
-          ? data.mobile_number[0]
-          : data?.mobile_number || "Zəhmət olmasa, düzgün nömrə daxil edin.",
-        confirmButtonText: "Başa düşdüm",
-        confirmButtonColor: "#1A4862",
-      });
-    }
-  } catch (error) {
-    console.error("Xəta:", error);
-    Swal.fire({
-      icon: "error",
-      title: "Serverə qoşulmaq mümkün olmadı",
-      text: "İnternet bağlantınızı yoxlayın və yenidən cəhd edin.",
-      confirmButtonText: "Başa düşdüm",
-      confirmButtonColor: "#d33",
-    });
-  }
-};
-
-
-
-
-
-  const handleFinalSubmit = async () => {
-    if (validateForm()) {
-      const formDataToSend = new FormData();
-
-      formDataToSend.append("first_name", formData.first_name);
-      formDataToSend.append("last_name", formData.last_name);
-      formDataToSend.append("birth_date", formData.birth_date);
-      formDataToSend.append("mobile_number", formData.mobile_number);
-      formDataToSend.append("password", formData.password);
-      formDataToSend.append("password2", formData.password2);
-      formDataToSend.append("gender", formData.gender);
-      formDataToSend.append("profession_area", formData.profession_area); //formData.profession_area
-      formDataToSend.append(
-        "profession_speciality",
-        formData.profession_speciality
-      ); //formData.profession_speciality
-      formDataToSend.append("experience_years", formData.experience_years);
-      formData.cities.forEach((cityId) => {
-        formDataToSend.append("cities", cityId); // backend array kimi qəbul etməlidir
-      });
-      formData.languages.forEach((langId) => {
-        formDataToSend.append("languages", langId); // array kimi
-      });
-      formDataToSend.append("education", formData.education);
-      formDataToSend.append("education_speciality", formData.educationField);
-      formDataToSend.append("note", formData.about);
-
-      // Sosial media
-      formDataToSend.append("facebook", socialMediaLinks.Facebook);
-      formDataToSend.append("instagram", socialMediaLinks.Instagram);
-      formDataToSend.append("tiktok", socialMediaLinks.TikTok);
-      formDataToSend.append("linkedin", socialMediaLinks.LinkedIn);
-
-      // Şəkil (profil)
-      if (formData.profile_image) {
-        formDataToSend.append("profile_image", formData.profile_image);
-        // console.log(formData.profile_image);
+  const handleNext = async (e) => {
+    e.preventDefault();
+    if (step == 1) {
+      if (!validateForm()) return;
+      if (!formData.mobile_number || formData.mobile_number.length !== 9) {
+        Swal.fire({
+          icon: "warning",
+          title: "Mobil nömrə düzgün deyil",
+          text: "Zəhmət olmasa, 9 rəqəmdən ibarət mobil nömrə daxil edin.",
+          confirmButtonText: "Başa düşdüm",
+          confirmButtonColor: "#1A4862",
+        });
+        return;
       }
-
-      // Portfolio şəkilləri
-      formData.work_images.forEach((file, index) => {
-        formDataToSend.append("work_images", file); // eyni adla əlavə etmək backend array kimi qəbul edirsə
-      });
-
-      console.log("formdatatosend:");
-      for (let [key, value] of formDataToSend.entries()) {
-        console.log(`${key}:`, value);
-      }
+      const fullNumber = `${formData.mobile_number}`;
 
       try {
-        axios
-          .post(
-            "https://masters-1.onrender.com/api/v1/register/",
-            formDataToSend
-          )
-          .then((response) => {
-            alert("Qeydiyyat uğurludur!");
-          })
-          .catch((error) => {
-            console.error("Error posting data:", error);
-          });
-        // const res = await fetch(
-        //   "https://masters-1.onrender.com/api/v1/register/",
-        //   {
-        //     method: "POST",
-        //     body: formDataToSend,
-        //     credentials: "include",
-        //   }
-        // );
+        const res = await fetch(
+          "https://masters-1.onrender.com/api/v1/check-phone/",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ mobile_number: fullNumber }),
+          }
+        );
 
-        // const result = await res.json();
-        // if (res.ok) {
-        //   alert("Qeydiyyat uğurludur!");
-        // } else {
-        //   console.error("Server error: ", result);
-        //   alert("Xətalar: " + JSON.stringify(result, null, 2));
-        // }
+        const data = await res.json();
+        console.log("Server cavabı:", data);
+
+        if (res.status === 200 && data?.is_mobile_number) {
+          if(validateForm() && Object.values(errorForHandleChange).filter((item)=>item != '').length === 0){
+            console.log(formDataErrors)
+            setStep((prev)=>prev+1);
+          }
+        } else {
+          Swal.fire({
+            icon: "warning",
+            title: "Bu nömrə istifadə olunur.",
+            text: data.mobile_number
+              ? data.mobile_number[0]
+              : "Zəhmət olmasa, başqa nömrə daxil edin.",
+            confirmButtonText: "Başa düşdüm",
+            confirmButtonColor: "#1A4862",
+          });
+        }
       } catch (error) {
-        console.error("Error:", error);
-        alert("Xəta baş verdi.");
+        console.error("Xəta:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Serverə qoşulmaq mümkün olmadı",
+          text: "İnternet bağlantınızı yoxlayın və yenidən cəhd edin.",
+          confirmButtonText: "Başa düşdüm",
+          confirmButtonColor: "#d33",
+        });
+      }
+    } else {
+      console.log(validateForm())
+      console.log(Object.values(errorForHandleChange))
+      console.log(Object.values(errorForHandleChange).filter((item)=>item != '').length === 0)
+      if (validateForm() && Object.values(errorForHandleChange).filter((item)=>item != '' && item != undefined).length === 0) {
+        setStep((prev) => prev + 1);
       }
     }
   };
 
-  //   try {
-  //     const res = await fetch("https://10a7-213-172-90-209.ngrok-free.app/api/users/register/", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(dataToSend),
-  //       credentials: "include"
-  //     });
+  const handleFinalSubmit = async () => {
+    if (!validateForm()) return;
+    const formDataToSend = new FormData();
+    formDataToSend.append("first_name", formData.first_name);
+    formDataToSend.append("last_name", formData.last_name);
+    formDataToSend.append("birth_date", formData.birth_date);
+    formDataToSend.append("mobile_number", formData.mobile_number);
+    formDataToSend.append("password", formData.password);
+    formDataToSend.append("password2", formData.password2);
+    formDataToSend.append("gender", formData.gender);
+    formDataToSend.append("profession_area", formData.profession_area);
+    formDataToSend.append(
+      "profession_speciality",
+      formData.profession_speciality
+    );
+    formDataToSend.append("experience_years", formData.experience_years);
 
-  //     const result = await res.json();
-  //     if (res.ok) {
-  //       alert("Qeydiyyat uğurludur!");
-  //     } else {
-  //       console.error("Server error: ", result);
-  //       alert("Xətalar: " + JSON.stringify(result, null, 2));
-  //     }
-  //   } catch (e) {
-  //     console.error("Error:", e);
-  //   }
-  // };
+    const selectedCities = Array.isArray(formData.cities)
+      ? formData.cities
+      : formData.cities
+      ? [formData.cities]
+      : [];
+    selectedCities.forEach((cityId) => formDataToSend.append("cities", cityId));
+
+    formData.languages.forEach((langId) =>
+      formDataToSend.append("languages", langId)
+    );
+
+    formDataToSend.append("education", formData.education);
+    formDataToSend.append("education_speciality", formData.educationField);
+    formDataToSend.append("note", formData.about);
+
+    // Sosial media
+    formDataToSend.append("facebook", socialMediaLinks.Facebook);
+    formDataToSend.append("instagram", socialMediaLinks.Instagram);
+    formDataToSend.append("tiktok", socialMediaLinks.TikTok);
+    formDataToSend.append("linkedin", socialMediaLinks.LinkedIn);
+
+    // Profil şəkli
+    if (formData.profile_image) {
+      formDataToSend.append("profile_image", formData.profile_image);
+    }
+
+    // Portfolio şəkilləri
+    formData.work_images.forEach((file) =>
+      formDataToSend.append("work_images", file)
+    );
+
+    try {
+      await axios.post(
+        "https://masters-1.onrender.com/api/v1/register/",
+        formDataToSend
+      );
+
+      Swal.fire({
+        title: "Qeydiyyat uğurludur!",
+        text: "Davam etmək üçün 'Login' düyməsinə klikləyin.",
+        icon: "success",
+        confirmButtonText: "Login",
+        allowOutsideClick: false,
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: "bg-cyan-600 px-6 py-2 rounded text-white",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login");
+        }
+      });
+    } catch (error) {
+      console.error("Error posting data:", error);
+
+      Swal.fire({
+        title: "Xəta baş verdi!",
+        text:
+          error?.response?.data?.detail || "Zəhmət olmasa, yenidən cəhd edin.",
+        icon: "error",
+        confirmButtonText: "Bağla",
+        buttonsStyling: false,
+        customClass: {
+          confirmButton: "bg-red-600 px-6 py-2 rounded text-white",
+        },
+      });
+    }
+  };
 
   const fileInputRef = useRef(null);
   const fileInputRef2 = useRef(null);
@@ -415,15 +476,17 @@ const handleNext = async (e) => {
   };
   const [showPassword, setShowPassword] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
-
   const [errorForHandleChange, setErrorForHandleChange] = useState({});
+  const containsRussianLetters = (text) => /[А-Яа-яЁё]/.test(text);
+  const isEmpty = (v) => !v || v.toString().trim() === "";
+  const nameRegex = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİIА-Яа-яЁё\s-]+$/;
 
   const handleChange = (e) => {
     const { name, value, type, multiple, options } = e.target;
 
     console.log(name);
 
-    if (type == "password") {
+    if (type === "password") {
       check_password_strength(value);
     }
 
@@ -442,19 +505,38 @@ const handleNext = async (e) => {
         [name]:
           type === "number"
             ? parseInt(value)
-            : type == "tel" && /\d/.test(value)
+            : type === "tel" && /\d/.test(value)
             ? value
             : type !== "tel"
             ? value
             : "",
       }));
     }
+    if (name === "first_name" || name === "last_name") {
+      if (!regexps(name).test(value) || containsRussianLetters(value)) {
+        setFormDataErrors((prev) => ({
+          ...prev,
+          [name]:
+            "Zəhmət olmasa, yalnız Azərbaycan hərflərindən istifadə edin.",
+        }));
+      } else {
+        setFormDataErrors((prev) => ({
+          ...prev,
+          [name]: "",
+        }));
+      }
+    }
 
-    if (name == "profession_area") {
+    if (name === "profession_area") {
       const selected = catagories.find((item) => item.id == value);
       setSelectedCategory(selected || null);
     }
+
+    if (formDataErrors[name]) {
+      setFormDataErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
+
   const regexps = (name) => {
     if (name === "first_name" || name === "last_name") {
       return /^[AaBbCcÇçDdEeƏəFfGgĞğHhXxIıİiJjKkQqLlMmNnOoÖöPpRrSsŞşTtUuÜüVvYyZz]{3,20}$/;
@@ -471,69 +553,75 @@ const handleNext = async (e) => {
     }
   };
 
-  const errorMsg = (name) => {
+  const errorMsg = (name, value) => {
+    console.log(name, value);
     if (name === "first_name" || name === "last_name") {
-      return "Yalnız Azərbaycan hərfləri ilə yazılmalıdır.";
+      if (value.trim() == "") {
+        return "Zəhmət olmasa, məlumatları daxil edin.";
+      } else {
+        return "Yalnız Azərbaycan hərfləri ilə yazılmalıdır.";
+      }
     } else if (name === "birth_date") {
-      return "Doğum tarixini düzgün daxil edin.";
+      const birthDate = new Date(formData.birth_date);
+      console.log(birthDate)
+      const minDate = subYears(new Date(), 15);
+      if (value == "Invalid Date") {
+        return "Zəhmət olmasa, məlumatları daxil edin.";
+      } else {
+        if (!isValid(birthDate)) {
+          return "Doğum tarixini düzgün daxil edin.";
+        } else if (birthDate > minDate) {
+          return "Qeydiyyatdan keçmək üçün minimum yaş 15 olmalıdır.";
+        } else {
+          return "";
+        }
+      }
     } else if (name === "mobile_number") {
-      return "Mobil nömrə düzgün daxil edilməyib.  50 123 45 67 formatında daxil edin.";
+      if (value.trim() == "") {
+        return "Zəhmət olmasa, məlumatları daxil edin.";
+      } else {
+        return "Mobil nömrə düzgün daxil edilməyib.  50 123 45 67 formatında daxil edin.";
+      }
     } else if (name === "password") {
-      return "Şifrəniz ən azı 8 simvoldan ibarət olmalı, özündə minimum bir böyük hərf, rəqəm və xüsusi simvol (məsələn: !, @, #, -, _, +) ehtiva etməlidir.";
+      if (value.trim() == "") {
+        return "Zəhmət olmasa, məlumatları daxil edin.";
+      } else {
+        return "Şifrəniz ən azı 8 simvoldan ibarət olmalı, özündə minimum bir böyük hərf, rəqəm və xüsusi simvol (məsələn: !, @, #, -, _, +) ehtiva etməlidir.";
+      }
     } else if (name === "password2") {
-      return "Şifrələr uyğun deyil.";
+      if (value.trim() == "") {
+        return "Zəhmət olmasa, məlumatları daxil edin.";
+      } else {
+        return "Şifrələr uyğun deyil.";
+      }
     } else if (name === "profession_speciality_other") {
       return "Yalnız Azərbaycan hərfləri ilə qeyd edilməlidir";
     }
   };
 
+  const handleChangeValidation = (e) => {
+    const { name } = e.target;
 
+    console.log(name);
 
-
-const handleChangeValidation = (e) => {
-  const { name } = e.target;
-
-  if (name === "password2") {
-    setErrorForHandleChange((prev) => ({
-      ...prev,
-      password2:
-        formData.password.trim() === formData.password2.trim()
-          ? ""
-          : "Şifrələr uyğun deyil.",
-    }));
-  } else if (name === "birth_date") {
-    const birthDate = new Date(formData.birth_date);
-    const minDate = subYears(new Date(), 15);
-
-    if (!isValid(birthDate)) {
+    if (name === "password2") {
       setErrorForHandleChange((prev) => ({
         ...prev,
-        birth_date: "Doğum tarixini düzgün daxil edin.",
-      }));
-    } else if (birthDate > minDate) {
-      setErrorForHandleChange((prev) => ({
-        ...prev,
-        birth_date: "Qeydiyyatdan keçmək üçün minimum yaş 15 olmalıdır.",
+        password2:
+          formData.password.trim() === formData.password2.trim()
+            ? ""
+            : "Şifrələr uyğun deyil.",
       }));
     } else {
+      const regexp = regexps(name);
+      const msg = errorMsg(name, formData[name]);
+
       setErrorForHandleChange((prev) => ({
         ...prev,
-        birth_date: "",
+        [name]: regexp?.test(formData[name]) ? "" : msg,
       }));
     }
-  } else {
-    const regexp = regexps(name);
-    const msg = errorMsg(name);
-
-    setErrorForHandleChange((prev) => ({
-      ...prev,
-      [name]: regexp?.test(formData[name]) ? "" : msg,
-    }));
-  }
-};
-
-
-
+  };
 
   const handleClick = () => {
     navigate("/login");
@@ -644,41 +732,23 @@ const handleChangeValidation = (e) => {
         Object.values(passwordStrength).filter((x) => x == true).length * 20 +
         "%]"
     );
-
-    // console.log(
-    //   Object.values(passwordStrength).filter((x) => x == true).length
-    // );
   };
 
-  // console.log(formData.education);
-  // console.log(formData.cities);
-
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-
-  //   const { name, surname, dob, phone, password, confirmPassword, gender } = formData;
-
-  //   if (!name || !surname || !dob || !phone || !password || !confirmPassword || !gender) {
-  //     alert("Zəhmət olmasa bütün sahələri doldurun.");
-  //     return;
-  //   }
-
-  //   if (password !== confirmPassword) {
-  //     alert("Şifrələr uyğun deyil.");
-  //     return;
-  //   }
-
-  //   setStep(2);
-  // };
-
+  const [citiesForShow, setCitiesForShow] = useState({
+    cities:[],
+    distinc:[]
+  })
   const handleChildData = (dataFromChild) => {
     console.log(dataFromChild);
     setFormData((prev) => ({
       ...prev,
-      cities: dataFromChild,
+      cities: [...dataFromChild.cities, ...dataFromChild.districts],
     }));
 
+    setCitiesForShow({cities:[...dataFromChild.selectedCitiesForShow].map((item) => ({id:item.id, display_name:item.display_name})), distinc:[...dataFromChild.selectedDistrictsForShow].map((item) => ({id:item.id, display_name:item.display_name}))})
+
     setShowPopup(false);
+    document.body.style.overflowY="auto"
   };
 
   //customize datepicker
@@ -702,7 +772,7 @@ const handleChangeValidation = (e) => {
       </div>
 
       <div className="relative w-full min-h-screen ">
-        <img src={"./img.png"} className="w-full  h-[full] object-cover" />
+        <img src={backgroundpng} className="w-full  h-[full] object-cover" />
         <div className="absolute inset-0 flex justify-center items-start pt-[80px] bg-[rgba(0,0,0,0.25)]">
           {step === 1 && (
             <form className="bg-white/70 backdrop-blur-sm p-6 rounded-lg shadow-lg w-[90%] max-w-md">
@@ -738,7 +808,7 @@ const handleChangeValidation = (e) => {
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  onBlur={handleChangeValidation}
+                  onBlur={handleChangeValidation} // və ya handleChangeValidation varsa, onu istifadə et
                   onKeyDown={(e) => {
                     const isControlKey = [
                       "Backspace",
@@ -748,27 +818,28 @@ const handleChangeValidation = (e) => {
                       "Delete",
                     ].includes(e.key);
 
-                    const isLetter = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİI]$/.test(e.key); // istənilən hərfə icazə ver
+                    const isLetter = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİIА-Яа-яЁё]$/.test(
+                      e.key
+                    );
                     const isValidInput = isLetter || isControlKey;
 
                     if (!isValidInput) {
-                      e.preventDefault(); // rəqəm və simvolları blokla
+                      e.preventDefault();
                     }
                   }}
                   placeholder="Adınızı daxil edin"
                   className={`${
-                    errorForHandleChange.first_name
+                    formDataErrors.first_name
                       ? "border-red-600"
                       : "border-gray-300"
                   } outline-gray-200 w-full mt-1 p-2 text-[16px]  border bg-white rounded-md`}
                 />
-                {formDataErrors.first_name &&
-                  (console.log("Error göstərilir:", formDataErrors.first_name), // burda çıxmalıdır
-                  (
+                {!errorForHandleChange.first_name &&
+                  formDataErrors.first_name && (
                     <p className="text-red-500 text-sm mt-1">
                       {formDataErrors.first_name}
                     </p>
-                  ))}
+                  )}
                 {errorForHandleChange.first_name && (
                   <p className="text-red-500 text-sm mt-1">
                     {errorForHandleChange.first_name}
@@ -779,13 +850,14 @@ const handleChangeValidation = (e) => {
                 <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
                   Soyad <span className="text-red-500">*</span>
                 </label>
+
                 <input
                   type="text"
                   maxLength={20}
                   name="last_name"
                   value={formData.last_name}
-                  onChange={handleChange}
-                  onBlur={handleChangeValidation}
+                  onChange={handleChange} /* dəyər yenilənir */
+                  onBlur={handleChangeValidation} /* blur zamanı doğrulama */
                   onKeyDown={(e) => {
                     const isControlKey = [
                       "Backspace",
@@ -795,26 +867,23 @@ const handleChangeValidation = (e) => {
                       "Delete",
                     ].includes(e.key);
 
-                    const isLetter = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİI]$/.test(e.key); // istənilən hərfə icazə ver
-                    const isValidInput = isLetter || isControlKey;
-                    if (!isValidInput) {
-                      e.preventDefault();
-                    }
+                    const isLetter = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİIА-Яа-яЁё]$/.test(
+                      e.key
+                    );
+                    if (!isLetter && !isControlKey) e.preventDefault();
                   }}
                   placeholder="Soyadınızı daxil edin"
-                  className={`${
-                    errorForHandleChange.last_name
-                      ? "border-red-600"
-                      : "border-gray-300"
-                  } outline-gray-200 w-full mt-1 p-2 text-[16px]  border bg-white rounded-md`}
+                  className={`w-full mt-1 p-2 text-[16px] bg-white rounded-md outline-gray-200
+      ${
+        formDataErrors.last_name ? "border-red-600" : "border-gray-300"
+      } border`}
                 />
-                {formDataErrors.last_name &&
-                  (console.log("Error göstərilir:", formDataErrors.last_name), // burda çıxmalıdır
-                  (
-                    <p className="text-red-500 text-sm mt-1">
-                      {formDataErrors.last_name}
-                    </p>
-                  ))}
+
+                {formDataErrors.last_name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formDataErrors.last_name}
+                  </p>
+                )}
                 {errorForHandleChange.last_name && (
                   <p className="text-red-500 text-sm mt-1">
                     {errorForHandleChange.last_name}
@@ -822,91 +891,111 @@ const handleChangeValidation = (e) => {
                 )}
               </div>
 
-            <div className="py-[10px]">
-  <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
-    Doğum tarixi <span className="text-red-500">*</span>
-  </label>
+              <div className="py-[10px]">
+                <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
+                  Doğum tarixi <span className="text-red-500">*</span>
+                </label>
 
-  <DatePicker
-    selected={
-      formData.birth_date
-        ? typeof formData.birth_date === "string"
-          ? new Date(formData.birth_date)
-          : formData.birth_date
-        : null
-    }
-    onChange={(date) =>
-      setFormData((prev) => ({
-        ...prev,
-        birth_date: date ? date.toISOString().split("T")[0] : "",
-      }))
-    }
-    name="birth_date"
-    onBlur={handleChangeValidation}
-    dateFormat="yyyy/MM/dd"
-    placeholderText="İl / ay / gün"
-    locale={az}
-    maxDate={subYears(new Date(), 15)} // Bu 15 yaşdan cavan tarixləri təqvimdə deaktiv edir
-    showMonthDropdown
-    showYearDropdown
-    dropdownMode="select"
-    calendarStartDay={1}
-    onChangeRaw={(e) => {
-      let val = "";
-      if (e.type == "click") {
-        val = e.target.ariaLabel.replace("Choose ", "");
-      } else {
-        val = e.target.value.replace(/\D/g, "").slice(0, 8);
-      }
-      let formatted = "";
+                <DatePicker
+                  selected={
+                    formData.birth_date
+                      ? typeof formData.birth_date === "string"
+                        ? new Date(formData.birth_date)
+                        : formData.birth_date
+                      : null
+                  }
+                  onChange={(date) => {
+                    console.log(date)
+                    return setFormData((prev) => {
+                      return {
+                        ...prev,
+                        birth_date: date
+                          ? `${date
+                              .toLocaleDateString()
+                              .split("T")[0]
+                              .replaceAll("-", "/").split("/")[2]}/${date
+                              .toLocaleDateString()
+                              .split("T")[0]
+                              .replaceAll("-", "/").split("/")[1]}/${date
+                              .toLocaleDateString()
+                              .split("T")[0]
+                              .replaceAll("-", "/").split("/")[0]}`
+                          : "",
+                      };
+                    });
+                  }}
+                  name="birth_date"
+                  onBlur={handleChangeValidation}
+                  dateFormat="yyyy/MM/dd"
+                  placeholderText="İl / ay / gün"
+                  locale={az}
+                  maxDate={subYears(new Date(), 15)} // Bu 15 yaşdan cavan tarixləri təqvimdə deaktiv edir
+                  showMonthDropdown
+                  showYearDropdown
+                  dropdownMode="select"
+                  calendarStartDay={1}
+                  onChangeRaw={(e) => {
+                    let val = "";
+                    if (e.type == "click") {
+                      val = e.target.ariaLabel.replace("Choose ", "");
+                    } else {
+                      val = e.target.value.replace(/\D/g, "").slice(0, 8);
+                    }
+                    let formatted = "";
+                    console.log(val)
 
-      if (val.length >= 4) {
-        formatted += val.slice(0, 4);
-        if (val.length >= 6) {
-          formatted += "/" + val.slice(4, 6);
-          if (val.length > 6) {
-            formatted += "/" + val.slice(6, 8);
-          }
-        } else if (val.length > 4) {
-          formatted += "/" + val.slice(4);
-        }
-      } else {
-        formatted = val;
-      }
+                    if (val.length >= 4) {
+                      formatted += val.slice(0, 4);
+                      if (val.length >= 6) {
+                        formatted += "/" + val.slice(4, 6);
+                        if (val.length > 6) {
+                          formatted += "/" + val.slice(6, 8);
+                        }
+                      } else if (val.length > 4) {
+                        formatted += "/" + val.slice(4);
+                      }
+                    } else {
+                      formatted = val;
+                    }
 
-      e.target.value = formatted;
-    }}
-    onKeyDown={(e) => {
-      const allowedKeys = [
-        "Backspace",
-        "ArrowLeft",
-        "ArrowRight",
-        "Delete",
-        "Tab",
-      ];
-      if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
-        e.preventDefault();
-      }
-    }}
-    className={`${
-      errorForHandleChange.birth_date
-        ? "border-red-600"
-        : "border-gray-300"
-    } outline-gray-200 w-full mt-1 p-2 text-[16px] border bg-white rounded-md text-gray-700`}
-  />
+                    e.target.value = formatted;
+                    console.log(formatted)
+                    setFormData((prev)=>({
+                      ...prev,
+                      birth_date: formatted
+                    }))
+                  }}
+                  onKeyDown={(e) => {
+                    const allowedKeys = [
+                      "Backspace",
+                      "ArrowLeft",
+                      "ArrowRight",
+                      "Delete",
+                      "Tab",
+                    ];
+                    if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  className={`${
+                    errorForHandleChange.birth_date
+                      ? "border-red-600"
+                      : "border-gray-300"
+                  } outline-gray-200 w-full mt-1 p-2 text-[16px] border bg-white rounded-md text-gray-700`}
+                />
 
-  {formDataErrors.birth_date && (
-    <p className="text-red-500 text-sm mt-1">
-      {formDataErrors.birth_date}
-    </p>
-  )}
+                {formDataErrors.birth_date && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formDataErrors.birth_date}
+                  </p>
+                )}
 
-  {errorForHandleChange.birth_date && (
-    <p className="text-red-500 text-sm mt-1">
-      {errorForHandleChange.birth_date}
-    </p>
-  )}
-</div>
+                {errorForHandleChange.birth_date && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errorForHandleChange.birth_date}
+                  </p>
+                )}
+              </div>
 
               <div className="py-[10px]">
                 <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
@@ -954,11 +1043,11 @@ const handleChangeValidation = (e) => {
                     />
                   </div>
 
-                  {formDataErrors.mobile_number && (
+                  {/* {formDataErrors.mobile_number && (
                     <p className="text-red-500 text-sm mt-1">
                       {formDataErrors.mobile_number}
                     </p>
-                  )}
+                  )} */}
 
                   {errorForHandleChange.mobile_number && (
                     <p className="text-red-500 text-sm mt-1">
@@ -1286,7 +1375,7 @@ const handleChangeValidation = (e) => {
                   type="text"
                   readOnly
                   onClick={openPopup}
-                  placeholder="Ərazi seç"
+                  placeholder={citiesForShow.cities.length > 0 || citiesForShow.distinc.length > 0 ? [...citiesForShow.cities.map((item)=>item.display_name), ...citiesForShow.distinc.map((item)=>item.display_name)] : 'Ərazi seç'}
                   className="w-full border p-2 rounded-md text-cyan-900 border-gray-200 bg-[rgba(195,200,209,1)] px-4 py-2  cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
                 />
 
@@ -1612,9 +1701,9 @@ const handleChangeValidation = (e) => {
         </div>
       </div>
       {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm  bg-black/50">
           <div className="w-[65%] h-[90%] rounded-2xl bg-image overflow-hidden shadow-lg">
-            <CitySelectionPopup onSendData={handleChildData} cities={cities} />
+            <CitySelectionPopup onSendData={handleChildData} cities={citiesForShow} />
           </div>
         </div>
       )}

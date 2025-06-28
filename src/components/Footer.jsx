@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa"
 import { FaXTwitter } from "react-icons/fa6"
 import { IoLocationOutline, IoCallOutline, IoMailOutline } from "react-icons/io5"
-import React from 'react';
+import React from "react"
 
 const Footer = () => {
   return (
@@ -78,5 +78,6 @@ const Footer = () => {
     </footer>
   )
 }
+
 
 export default Footer

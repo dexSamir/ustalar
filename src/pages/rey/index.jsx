@@ -12,7 +12,7 @@ function Rey() {
     "#Dəqiq",
     "#Peşəkar",
     "#Təcrübəli",
-    "#Səmərəli",
+    "#Səmərəli",  
     "#Çevik",
     "#Səbirli",
   ];
