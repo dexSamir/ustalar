@@ -1,4 +1,3 @@
-// Sidebar.jsx
 import React, { useState } from "react";
 import { FaRegStar } from "react-icons/fa";
 import { GoPerson } from "react-icons/go";
@@ -10,10 +9,10 @@ import LogoutButton from "../components/logout";
 
 const Sidebar = () => {
   const menu = [
-    { label: "Profilim", path: "profil", icon: <GoPerson size={20} /> },
-    { label: "Tənzimləmələr", path: "edit",  icon: <IoSettingsOutline size={20} /> },
-    { label: "Qiymətləndirmələr", path: "review", icon: <FaRegStar size={20} /> },
-    { label: "Çıxış", isLogout: true, icon: <MdLogout size={20} /> },   // <-- flag
+    { label: "Profilim", path: "/profil", icon: <GoPerson size={20} /> },
+    { label: "Tənzimləmələr", path: "/edit",  icon: <IoSettingsOutline size={20} /> },
+    { label: "Qiymətləndirmələr", path: "/review/:masterId", icon: <FaRegStar size={20} /> },
+    { label: "Çıxış", isLogout: true, icon: <MdLogout size={20} /> }, 
   ];
 
   const navigate = useNavigate();
@@ -52,17 +51,15 @@ const Sidebar = () => {
         <nav className="space-y-2">
           {menu.map((item, idx) =>
             item.isLogout ? (
-              /* ----------- Çıxış üçün LogoutButton ----------- */
               <LogoutButton
                 key={idx}
                 className="flex items-center gap-3 w-full text-left p-3 rounded-xl transition-colors duration-200 cursor-pointer hover:bg-white/20"
-                onAfterLogout={() => setIsSidebarOpen(false)}  // sidebarı bağla
+                onAfterLogout={() => setIsSidebarOpen(false)} 
               >
                 {item.icon}
                 <span>{item.label}</span>
               </LogoutButton>
             ) : (
-              /* ----------- Digər menyu düymələri ----------- */
               <button
                 key={idx}
                 onClick={() => {

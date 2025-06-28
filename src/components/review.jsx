@@ -2,6 +2,7 @@ import { Star } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import Footer from "./Footer";
+import Sidebar from "../sidebar";
 
 const getImageUrl = (path) => {
   if (!path) return "/placeholder.svg";
@@ -156,7 +157,8 @@ export default function ReviewDisplay({ masterId }) {
   ];
 
   return (
-    <div>
+    <div className="flex min-h-screen">
+      <Sidebar />
       <div className="mx-auto p-6 max-w-[1400px] bg-white rounded-lg">
         <h2 className="font-bold text-2xl text-cyan-900 mb-6">
           Reytinq və rəylər
@@ -376,7 +378,6 @@ export default function ReviewDisplay({ masterId }) {
           </div>
         )}
       </div>
-      <Footer />
     </div>
   );
 }

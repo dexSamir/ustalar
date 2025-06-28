@@ -20,7 +20,7 @@ export const router = createBrowserRouter([
     element: <Ecom />,
   },
   {
-    path: "/reviews/:masterId",
+    path: "/reviews",
     element: <ReviewPage />,
   },
   {
@@ -36,11 +36,11 @@ export const router = createBrowserRouter([
     element: <ProfilePage />,
   },
   {
-    path: "/masters/:id",
+    path: "/rey",
     element: <Rey />,
   },
    {
-    path: "/rey/:masterId", 
+    path: "/review/:masterId", 
     element: <Review />,
   },
   {

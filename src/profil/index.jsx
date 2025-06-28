@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Sidebar from "../Sidebar";
 import {
   MdWorkOutline,
   MdCalendarToday,
@@ -198,6 +199,7 @@ export default function ProfilePage() {
   );
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-100">
+      <Sidebar />
       <main className="flex-1 p-6 space-y-6">
         <ProfileHeader profileData={profileprofileData} />
         <InfoCards profileData={profileprofileData} isUseFor="Profile" />

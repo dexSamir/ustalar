@@ -11,7 +11,6 @@ const Navbar = () => {
     <nav className="bg-cyan-900">
       <div className="mx-auto max-w-7xl px-[15px]">
         <div className="relative flex h-16 items-center justify-between">
-          {/* Mobil menyu düyməsi */}
           <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
             <button
               onClick={toggleMobileMenu}
@@ -55,14 +54,11 @@ const Navbar = () => {
             </button>
           </div>
 
-          {/* Logo və menyu hissəsi */}
           <div className="flex w-full items-center justify-between">
-            {/* Sol: Logo */}
             <div className="flex items-center">
               <p className="font-semibold text-white text-3xl">Ustam.az</p>
             </div>
 
-            {/* Sağ: Desktop menyu və düymə */}
             <div className="hidden sm:flex items-center space-x-4">
               <a
                 href="#"
@@ -97,7 +93,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobil menyu (toggle ilə) */}
       {isOpen && (
         <div className="sm:hidden" id="mobile-menu">
           <div className="space-y-1 px-2 pt-2 pb-3">
