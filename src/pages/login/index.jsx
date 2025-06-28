@@ -139,7 +139,7 @@ function Login() {
           "Giriş Uğurlu!",
           "Hesabınıza uğurla daxil oldunuz. Ana səhifəyə yönləndirilirsiniz.",
           "Davam et",
-          "/",
+          "/profil",
         )
       } else {
         let errorMessage = "Giriş zamanı xəta baş verdi"
