@@ -32,7 +32,7 @@ export const router = createBrowserRouter([
     element: <Register />,
   },
   {
-    path: "/profil/:masterId",
+    path: "/profil/",
     element: <ProfilePage />,
   },
   {
