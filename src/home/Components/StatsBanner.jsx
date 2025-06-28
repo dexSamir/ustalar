@@ -1,5 +1,5 @@
 import React from 'react';
-import './StatsBanner.css';
+import './statsbanner.css';
 
 const statsData = [
     {
