@@ -39,9 +39,9 @@ export default function EcomSidebar({ onFilterChange }) {
     const fetchFilterData = async () => {
       try {
         const [categoriesRes, citiesRes, servicesRes] = await Promise.all([
-          fetch("https://masters-1.onrender.com/api/v1/categories/"),
-          fetch("https://masters-1.onrender.com/api/v1/services/"),
-          fetch("https://masters-1.onrender.com/api/v1/cities/"),
+          fetch("https://api.peshekar.online/api/v1/categories/"),
+          fetch("https://api.peshekar.online/api/v1/services/"),
+          fetch("https://api.peshekar.online/api/v1/cities/"),
         ]);
 
         const categoriesData = await categoriesRes.json();

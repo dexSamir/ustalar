@@ -1,6 +1,5 @@
-import React from "react"
-import { useState, useRef, useEffect } from "react"
-import { ArrowLeft, ArrowRight, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react'
+import React, { useState, useRef, useEffect } from "react"
+import { ArrowLeft, ArrowRight, RotateCcw, ZoomIn, ZoomOut } from "lucide-react"
 
 const ImageEditor = ({ image, onSave, onCancel }) => {
   const [scale, setScale] = useState(1)
@@ -32,13 +31,11 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
           const containerSize = 300
           const imgAspect = img.width / img.height
           let initialScale = 1
-
           if (imgAspect > 1) {
             initialScale = containerSize / img.width
           } else {
             initialScale = containerSize / img.height
           }
-
           setScale(initialScale * 1.2)
           setPosition({ x: 0, y: 0 })
         }
@@ -59,7 +56,6 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
     ctx.clearRect(0, 0, size, size)
 
     ctx.save()
-
     ctx.beginPath()
     ctx.arc(size / 2, size / 2, size / 2, 0, 2 * Math.PI)
     ctx.clip()
@@ -80,7 +76,6 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
     }
 
     ctx.drawImage(imageElement, drawX, drawY, scaledWidth, scaledHeight)
-
     ctx.restore()
 
     ctx.beginPath()
@@ -104,7 +99,6 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return
-
     setPosition({
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y,
@@ -155,7 +149,6 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-6 max-w-md mx-4 text-center">
         <h3 className="text-lg font-semibold text-[#1A4862] mb-4">Şəkli dairəyə yerləşdirin</h3>
-
         <div className="relative mb-4" ref={containerRef}>
           <canvas
             ref={canvasRef}
@@ -166,7 +159,6 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
             onMouseLeave={handleMouseUp}
           />
         </div>
-
         <div className="flex justify-center items-center gap-2 mb-4">
           <button
             onClick={handleZoomOut}
@@ -175,7 +167,6 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
           >
             <ZoomOut size={16} />
           </button>
-
           <div className="flex-1 px-2">
             <input
               type="range"
@@ -187,7 +178,6 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
             />
           </div>
-
           <button
             onClick={handleZoomIn}
             className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors"
@@ -196,7 +186,6 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
             <ZoomIn size={16} />
           </button>
         </div>
-
         <div className="flex justify-center gap-2 mb-4">
           <button
             onClick={handleRotate}
@@ -212,9 +201,7 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
             Sıfırla
           </button>
         </div>
-
         <p className="text-sm text-gray-600 mb-4">Şəkli sürüşdürərək yerini dəyişin və böyüklüyünü tənzimləyin</p>
-
         <div className="flex gap-3">
           <button
             onClick={onCancel}
@@ -232,7 +219,6 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
           </button>
         </div>
       </div>
-
       <style jsx>{`
         .slider::-webkit-slider-thumb {
           appearance: none;
@@ -242,7 +228,6 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
           background: #1A4862;
           cursor: pointer;
         }
-        
         .slider::-moz-range-thumb {
           width: 16px;
           height: 16px;

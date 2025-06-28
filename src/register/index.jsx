@@ -94,10 +94,10 @@ function Register() {
   };
 
   const [formData, setFormData] = useState({
-    first_name: "", // ⬅️ dəyişdi
-    last_name: "", // ⬅️ dəyişdi
-    birth_date: "", // ⬅️ dəyişdi
-    mobile_number: "", // ⬅️ dəyişdi
+    first_name: "", 
+    last_name: "", 
+    birth_date: "",
+    mobile_number: "",
     password: "",
     password2: "",
     gender: "",
@@ -145,33 +145,28 @@ function Register() {
   };
 
   const handleLanguageChange = (e) => {
-    const value = parseInt(e.target.value); // string gəlir, rəqəmə çeviririk
+    const value = parseInt(e.target.value);
     const isChecked = e.target.checked;
 
     setFormData((prevData) => {
       let updatedLanguages = [...prevData.languages];
 
       if (isChecked) {
-        // əgər seçilibsə və artıq yoxdursa, əlavə et
         if (!updatedLanguages.includes(value)) {
           updatedLanguages.push(value);
         }
       } else {
-        // əgər seçilməyibsə, sil
         updatedLanguages = updatedLanguages.filter((id) => id !== value);
       }
-      // console.log("Yeni dillər:", updatedLanguages);
       return { ...prevData, languages: updatedLanguages };
     });
   };
   const [showPopup, setShowPopup] = useState(false);
 
-  // Açma funksiyası
   const openPopup = () => {
     setShowPopup(true);
   };
 
-  // Bağlama funksiyası
   const closePopup = () => {
     setShowPopup(false);
   };
@@ -260,7 +255,7 @@ function Register() {
   };
   const handleBlur = (e) => {
     const { name } = e.target;
-    const allErrors = collectStepErrors(step, formData); // heç state dəyişmir
+    const allErrors = collectStepErrors(step, formData);
     setFormDataErrors((prev) => ({
       ...prev,
       [name]: allErrors[name] ?? "",
@@ -285,7 +280,7 @@ function Register() {
 
       try {
         const res = await fetch(
-          "https://masters-1.onrender.com/api/v1/check-phone/",
+          "https://api.peshekar.online/api/v1/check-phone/",
           {
             method: "POST",
             headers: {
@@ -357,25 +352,22 @@ const handleFinalSubmit = async () => {
   formDataToSend.append("education_speciality", formData.educationField);
   formDataToSend.append("note", formData.about);
 
-  // Sosial media
   formDataToSend.append("facebook", socialMediaLinks.Facebook);
   formDataToSend.append("instagram", socialMediaLinks.Instagram);
   formDataToSend.append("tiktok", socialMediaLinks.TikTok);
   formDataToSend.append("linkedin", socialMediaLinks.LinkedIn);
 
-  // Profil şəkli
   if (formData.profile_image) {
     formDataToSend.append("profile_image", formData.profile_image);
   }
 
-  // Portfolio şəkilləri
   formData.work_images.forEach((file) =>
     formDataToSend.append("work_images", file)
   );
 
   try {
     await axios.post(
-      "https://masters-1.onrender.com/api/v1/register/",
+      "https://api.peshekar.online/api/v1/register/",
       formDataToSend
     );
 
@@ -498,7 +490,7 @@ const handleFinalSubmit = async () => {
     } else if (name === "profession_speciality_other") {
       return /^[AaBbCcÇçDdEeƏəFfGgĞğHhXxIıİiJjKkQqLlMmNnOoÖöPpRrSsŞşTtUuÜüVvYyZz ]{3,40}$/;
     } else {
-      return null; // password2 üçün regex yoxdur
+      return null;
     }
   };
 
@@ -544,7 +536,6 @@ const handleFinalSubmit = async () => {
 
       console.log(birthDate)
 
-      //Invalid Date
 
       if(birthDate == 'Invalid Date'){
         setErrorForHandleChange((prev) => ({
@@ -700,8 +691,6 @@ const handleFinalSubmit = async () => {
     setShowPopup(false);
   };
 
-  //customize datepicker
-
   return (
     <div>
       <div className="bg-[rgba(26,72,98,1)] h-[100px] sticky top-0 left-0 z-50 flex justify-between px-[20px] py-[20px]">
@@ -757,7 +746,7 @@ const handleFinalSubmit = async () => {
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  onBlur={handleChangeValidation} // və ya handleChangeValidation varsa, onu istifadə et
+                  onBlur={handleChangeValidation} 
                   onKeyDown={(e) => {
                     const isControlKey = [
                       "Backspace",
@@ -804,8 +793,8 @@ const handleFinalSubmit = async () => {
                   maxLength={20}
                   name="last_name"
                   value={formData.last_name}
-                  onChange={handleChange} /* dəyər yenilənir */
-                  onBlur={handleChangeValidation} /* blur zamanı doğrulama */
+                  onChange={handleChange}
+                  onBlur={handleChangeValidation}
                   onKeyDown={(e) => {
                     const isControlKey = [
                       "Backspace",
@@ -865,7 +854,7 @@ const handleFinalSubmit = async () => {
                   dateFormat="yyyy/MM/dd"
                   placeholderText="İl / ay / gün"
                   locale={az}
-                  maxDate={subYears(new Date(), 15)} // Bu 15 yaşdan cavan tarixləri təqvimdə deaktiv edir
+                  maxDate={subYears(new Date(), 15)}
                   showMonthDropdown
                   showYearDropdown
                   dropdownMode="select"
@@ -1235,11 +1224,11 @@ const handleFinalSubmit = async () => {
                         "Delete",
                       ].includes(e.key);
 
-                      const isLetter = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİI ]$/.test(e.key); // yalnız hərflər və boşluq
+                      const isLetter = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİI ]$/.test(e.key);
                       const isValidInput = isLetter || isControlKey;
 
                       if (!isValidInput) {
-                        e.preventDefault(); // rəqəm və simvolları blokla
+                        e.preventDefault();
                       }
                     }}
                     placeholder="Daxil edin..."
@@ -1363,7 +1352,6 @@ const handleFinalSubmit = async () => {
                 Əlavə məlumatlar
               </h2>
 
-              {/* Təhsil bölməsi */}
               <div className="mb-4">
                 <label className="block text-sm text-cyan-900 font-medium mb-1 py-2">
                   Təhsil <span className="text-red-500">*</span>

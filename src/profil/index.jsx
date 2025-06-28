@@ -56,7 +56,7 @@ export default function ProfilePage() {
 
   const getProfile = () => [
     axios
-      .get("https://masters-1.onrender.com/api/v1/profile/", {
+      .get("https://api.peshekar.online/api/v1/profile/", {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
@@ -82,7 +82,7 @@ export default function ProfilePage() {
               link: response.data.linkedin,
             },
           ].filter((item) => item.link)
-        ); // boş olmayanları saxla
+        ); 
       })
       .catch((error) => {
         console.error("Error fetching profile:", error);
@@ -197,7 +197,6 @@ export default function ProfilePage() {
   );
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-100">
-      {/* <Sidebar /> */}
       <main className="flex-1 p-6 space-y-6">
         <ProfileHeader profileData={profileprofileData} />
         <InfoCards profileData={profileprofileData} isUseFor="Profile" />
@@ -230,7 +229,6 @@ export const InfoCards = ({ profileData, isUseFor }) => {
   const [isMoreLocation, setIsMoreLocation] = useState(false);
   return (
     <div className="grid gap-10 grid-cols-1 p-3 m-6 md:grid-cols-3">
-      {/* Şəxsi Məlumatlar */}
       <div
         className={` p-6 rounded-xl space-y-5 ${
           isUseFor === "User Profile" ? "" : "bg-blue-50 shadow-md"
@@ -303,7 +301,6 @@ export const InfoCards = ({ profileData, isUseFor }) => {
         )}
       </div>
 
-      {/* Peşə Məlumatları */}
       <div
         className={` p-6 rounded-xl space-y-5 ${
           isUseFor === "User Profile" ? "" : "bg-blue-50 shadow-md"
@@ -374,7 +371,6 @@ export const InfoCards = ({ profileData, isUseFor }) => {
         )}
       </div>
 
-      {/* Təhsil və Bacarıqlar */}
       <div
         className={` p-6 rounded-xl space-y-5 ${
           isUseFor === "User Profile" ? "" : "bg-blue-50 shadow-md"

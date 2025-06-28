@@ -8,6 +8,7 @@ import ReviewPage from "../pages/ReviewPage";
 import ProfilePage from "../profil";
 import Rey from "../pages/rey";
 import Edit from "../components/Edit";
+import Review from "../components/review";
 
 export const router = createBrowserRouter([
   {
@@ -31,12 +32,16 @@ export const router = createBrowserRouter([
     element: <Register />,
   },
   {
-    path: "/profil",
+    path: "/profil/:masterId",
     element: <ProfilePage />,
   },
   {
     path: "/masters/:id",
     element: <Rey />,
+  },
+   {
+    path: "/rey/:masterId", 
+    element: <Review />,
   },
   {
     path: "/edit",

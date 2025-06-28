@@ -6,6 +6,7 @@ import User from '../assets/profile-circle.svg';
 import SearchIcon from '../assets/search.svg';
 import ArrowDown from '../assets/arrow-down.svg';
 import BurgerMenuOverlay from './BurgerMenu';
+import { Link } from 'react-router-dom';
 
 function Header() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,13 +54,13 @@ function Header() {
           </div>
         </div>
         <button className="search-button-primary">Axtar</button>
-        <button className="register-button">
+        <Link to="/login" className="register-button">
           Daxil Ol
-        </button>
-        <button className="register-button">
+        </Link>
+        <Link to="/register" className="register-button">
           <img src={User} />
           Qeydiyyat
-        </button>
+        </Link>
         <BurgerMenuOverlay isOpen={isMenuOpen} onClose={toggleMenu} />
       </header>
   );

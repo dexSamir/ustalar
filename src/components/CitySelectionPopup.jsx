@@ -1,218 +1,138 @@
-"use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
+import { Search, X } from "lucide-react"
+import axios from "axios"
 
-export default function CitySelectionPopup({ onSendData, cities: initialCitiesForShow }) {
+export default function CitySelectionPopup({ onSendData, cities: initialCities }) {
+  const [cities, setCities] = useState([])
+  const [districts, setDistricts] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCities, setSelectedCities] = useState(initialCitiesForShow.cities || [])
-  const [selectedDistricts, setSelectedDistricts] = useState(initialCitiesForShow.distinc || [])
-  const [allCities, setAllCities] = useState([])
-  const [allDistricts, setAllDistricts] = useState([])
-  const [bakuDistricts, setBakuDistricts] = useState([])
-  const [isBakuOpen, setIsBakuOpen] = useState(false)
+  const [selectedCities, setSelectedCities] = useState(initialCities.cities || [])
+  const [selectedDistricts, setSelectedDistricts] = useState(initialCities.districts || [])
+  const [activeTab, setActiveTab] = useState("cities")
 
-  useEffect(() => {
-    // Fetch all cities
-    fetch("https://api.peshekar.online/api/v1/cities/")
-      .then((res) => res.json())
-      .then((data) => {
-        setAllCities(data)
-      })
-      .catch((error) => console.error("Şəhərləri yükləmək mümkün olmadı:", error))
-
-    // Fetch all districts and separate Baku districts
-    fetch("https://api.peshekar.online/api/v1/districts/")
-      .then((res) => res.json())
-      .then((data) => {
-        const baku = data.find((item) => item.display_name === "Bakı")
-        if (baku && baku.sub_districts) {
-          setBakuDistricts(baku.sub_districts)
-        }
-        const otherDistricts = data.filter((item) => item.display_name !== "Bakı")
-        setAllDistricts(otherDistricts)
-      })
-      .catch((error) => console.error("Rayonları yükləmək mümkün olmadı:", error))
+  const fetchCitiesAndDistricts = useCallback(async () => {
+    try {
+      const [citiesRes, districtsRes] = await Promise.all([
+        axios.get("https://api.peshekar.online/api/v1/cities/"),
+        axios.get("https://api.peshekar.online/api/v1/districts/"),
+      ])
+      setCities(citiesRes.data.results || citiesRes.data)
+      setDistricts(districtsRes.data.results || districtsRes.data)
+    } catch (error) {
+      console.error("Error fetching cities or districts:", error)
+    }
   }, [])
 
-  const normalizeAz = (str) => {
-    return str
-      .toLowerCase()
-      .replace(/ə/g, "e")
-      .replace(/ı/g, "i")
-      .replace(/ö/g, "o")
-      .replace(/ü/g, "u")
-      .replace(/ç/g, "c")
-      .replace(/ş/g, "s")
-      .replace(/ğ/g, "g")
-  }
+  useEffect(() => {
+    fetchCitiesAndDistricts()
+  }, [fetchCitiesAndDistricts])
 
-  const filteredAllCities = allCities.filter((city) => normalizeAz(city.display_name).includes(normalizeAz(searchTerm)))
-
-  const filteredAllDistricts = allDistricts.filter((district) =>
-    normalizeAz(district.display_name).includes(normalizeAz(searchTerm)),
-  )
-
-  const filteredBakuDistricts = bakuDistricts.filter((district) =>
-    normalizeAz(district.display_name).includes(normalizeAz(searchTerm)),
-  )
-
-  const handleCityToggle = (city) => {
-    setSelectedCities((prev) =>
-      prev.some((c) => c.id === city.id) ? prev.filter((c) => c.id !== city.id) : [...prev, city],
-    )
-  }
-
-  const handleDistrictToggle = (district) => {
-    setSelectedDistricts((prev) =>
-      prev.some((d) => d.id === district.id) ? prev.filter((d) => d.id !== district.id) : [...prev, district],
-    )
+  const handleSelect = (item, type) => {
+    if (type === "city") {
+      setSelectedCities((prev) =>
+        prev.some((s) => s.id === item.id) ? prev.filter((s) => s.id !== item.id) : [...prev, item],
+      )
+    } else {
+      setSelectedDistricts((prev) =>
+        prev.some((s) => s.id === item.id) ? prev.filter((s) => s.id !== item.id) : [...prev, item],
+      )
+    }
   }
 
   const handleConfirm = () => {
+    const allSelectedIds = [...selectedCities.map((c) => c.id), ...selectedDistricts.map((d) => d.id)]
     onSendData({
+      cities: allSelectedIds,
       selectedCitiesForShow: selectedCities,
       selectedDistrictsForShow: selectedDistricts,
     })
   }
 
-  const handleClose = () => {
-    onSendData({
-      selectedCitiesForShow: initialCitiesForShow.cities,
-      selectedDistrictsForShow: initialCitiesForShow.distinc,
-    })
-  }
+  const filteredCities = cities.filter((city) =>
+    (city.display_name || city.name).toLowerCase().includes(searchTerm.toLowerCase()),
+  )
+  const filteredDistricts = districts.filter((district) =>
+    (district.display_name || district.name).toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-lg flex flex-col h-full">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-white rounded-lg shadow-lg flex flex-col h-full">
+      <div className="p-6 border-b border-gray-200 flex justify-between items-center">
         <h2 className="text-2xl font-bold text-[#1A4862]">Fəaliyyət göstərdiyi ərazi</h2>
-        <button onClick={handleClose} className="text-gray-500 hover:text-gray-800 text-2xl font-bold">
-          &times;
-        </button>
-      </div>
-
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Şəhər və ya rayon axtar..."
-          className="w-full p-2 border border-[#C3C8D1] rounded-lg outline-none text-[#1A4862] font-semibold"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
-      <div className="flex-grow overflow-y-auto pr-2">
-        {/* Baku and its districts */}
-        {bakuDistricts.length > 0 && (
-          <div className="mb-4">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setIsBakuOpen(!isBakuOpen)}>
-              <input
-                type="checkbox"
-                id="baku-city"
-                checked={
-                  selectedCities.some((c) => c.display_name === "Bakı") ||
-                  selectedDistricts.some((d) => bakuDistricts.some((bd) => bd.id === d.id))
-                }
-                onChange={() => {
-                  // Toggle Baku city itself if it exists in allCities
-                  const bakuCity = allCities.find((c) => c.display_name === "Bakı")
-                  if (bakuCity) {
-                    handleCityToggle(bakuCity)
-                  }
-                  // Toggle all Baku districts
-                  if (selectedDistricts.some((d) => bakuDistricts.some((bd) => bd.id === d.id))) {
-                    setSelectedDistricts((prev) => prev.filter((d) => !bakuDistricts.some((bd) => bd.id === d.id)))
-                  } else {
-                    setSelectedDistricts((prev) => [
-                      ...prev,
-                      ...bakuDistricts.filter((bd) => !prev.some((p) => p.id === bd.id)),
-                    ])
-                  }
-                }}
-              />
-              <label htmlFor="baku-city" className="font-bold text-[#1A4862]">
-                Bakı
-              </label>
-              <svg
-                className={`w-4 h-4 transition-transform ${isBakuOpen ? "rotate-180" : ""}`}
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            {isBakuOpen && (
-              <div className="ml-4 mt-2 grid grid-cols-2 gap-2">
-                {filteredBakuDistricts.map((district) => (
-                  <div key={district.id} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id={`district-${district.id}`}
-                      checked={selectedDistricts.some((d) => d.id === district.id)}
-                      onChange={() => handleDistrictToggle(district)}
-                    />
-                    <label htmlFor={`district-${district.id}`}>{district.display_name}</label>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Other cities */}
-        {filteredAllCities.length > 0 && (
-          <div className="mb-4">
-            <h3 className="font-bold text-[#1A4862] mb-2">Digər Şəhərlər</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {filteredAllCities.map((city) => (
-                <div key={city.id} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id={`city-${city.id}`}
-                    checked={selectedCities.some((c) => c.id === city.id)}
-                    onChange={() => handleCityToggle(city)}
-                  />
-                  <label htmlFor={`city-${city.id}`}>{city.display_name}</label>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Other districts (if any, not part of Baku) */}
-        {filteredAllDistricts.length > 0 && (
-          <div className="mb-4">
-            <h3 className="font-bold text-[#1A4862] mb-2">Digər Rayonlar</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {filteredAllDistricts.map((district) => (
-                <div key={district.id} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id={`other-district-${district.id}`}
-                    checked={selectedDistricts.some((d) => d.id === district.id)}
-                    onChange={() => handleDistrictToggle(district)}
-                  />
-                  <label htmlFor={`other-district-${district.id}`}>{district.display_name}</label>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-4 flex justify-end gap-3">
         <button
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-          onClick={handleClose}
+          onClick={() => onSendData({ cities: [], selectedCitiesForShow: [], selectedDistrictsForShow: [] })}
+          className="text-gray-500 hover:text-gray-700"
         >
-          Ləğv et
+          <X size={24} />
         </button>
+      </div>
+
+      <div className="p-6">
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <input
+            type="text"
+            placeholder="Axtar..."
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1A4862]"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        <div className="flex mb-4 border-b border-gray-200">
+          <button
+            className={`flex-1 py-2 text-center font-medium ${
+              activeTab === "cities"
+                ? "text-[#1A4862] border-b-2 border-[#1A4862]"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("cities")}
+          >
+            Şəhərlər
+          </button>
+          <button
+            className={`flex-1 py-2 text-center font-medium ${
+              activeTab === "districts"
+                ? "text-[#1A4862] border-b-2 border-[#1A4862]"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("districts")}
+          >
+            Rayonlar
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-64 overflow-y-auto pr-2">
+          {activeTab === "cities"
+            ? filteredCities.map((city) => (
+                <label key={city.id} className="flex items-center text-gray-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-5 w-5 text-[#1A4862] rounded"
+                    checked={selectedCities.some((s) => s.id === city.id)}
+                    onChange={() => handleSelect(city, "city")}
+                  />
+                  <span className="ml-2">{city.display_name || city.name}</span>
+                </label>
+              ))
+            : filteredDistricts.map((district) => (
+                <label key={district.id} className="flex items-center text-gray-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-5 w-5 text-[#1A4862] rounded"
+                    checked={selectedDistricts.some((s) => s.id === district.id)}
+                    onChange={() => handleSelect(district, "district")}
+                  />
+                  <span className="ml-2">{district.display_name || district.name}</span>
+                </label>
+              ))}
+        </div>
+      </div>
+
+      <div className="p-6 border-t border-gray-200 mt-auto">
         <button
-          className="px-6 py-2 bg-[#1A4862] text-white rounded-lg hover:bg-[#255C80] transition-colors"
+          className="w-full bg-[#1A4862] text-white py-3 rounded-md font-semibold hover:bg-[#1A4862]/90 transition-colors"
           onClick={handleConfirm}
         >
           Təsdiqlə

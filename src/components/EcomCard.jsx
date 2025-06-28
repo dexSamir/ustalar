@@ -1,13 +1,13 @@
-import React from "react";
 import { Star, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import React from "react";
 
 const getImageUrl = (path) => {
   if (!path) return "/placeholder.svg";
   if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
   }
-  return `https://masters-1.onrender.com${path}`;
+  return `https://api.peshekar.online/api/v1/${path}`;
 };
 
 export default function EcomCard({
@@ -16,8 +16,8 @@ export default function EcomCard({
   specialityName,
   cityNames,
 }) {
-  const displayRating = professional.rating?.toFixed(1) || "N/A";
-  const displayReviewCount = professional.reviewCount || 0;
+  const displayRating = professional.average_rating?.toFixed(1) || "N/A";
+  const displayReviewCount = professional.review_count || 0;
   const displayTags = professional.tags || [];
   const locationText =
     cityNames && cityNames.length > 0 ? cityNames.join(", ") : "Yer yoxdur";
@@ -27,14 +27,12 @@ export default function EcomCard({
       <div className="relative w-full h-48">
         <img
           src={getImageUrl(professional.profile_image) || "/placeholder.svg"}
-          alt={`${professional.first_name} ${professional.last_name}`}
+          alt={`${professional.full_name}`}
           className="w-full h-full object-cover rounded-t-lg"
         />
       </div>
       <div className="p-4 flex flex-col flex-grow">
-        <h3 className="font-bold text-xl mb-1">
-          {professional.first_name} {professional.last_name}
-        </h3>
+        <h3 className="font-bold text-xl mb-1">{professional.full_name}</h3>
         <p className="text-gray-600 text-sm mb-2">
           {categoryName}
           {specialityName && ` - ${specialityName}`}
@@ -63,7 +61,7 @@ export default function EcomCard({
           </div>
         )}
         <div className="mt-auto">
-          <Link to={`/reviews/${professional.id}`}>
+          <Link to={`/profil/${professional.id}`}>
             {" "}
             <button className="w-full bg-[#1A4862] text-white py-2 rounded-lg font-medium hover:bg-[#1A4862]/90 transition-colors">
               Ətraflı

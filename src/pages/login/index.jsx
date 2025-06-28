@@ -105,7 +105,7 @@ function Login() {
     try {
       console.log("Login attempt with data:", formData)
 
-      const response = await fetch("https://masters-1.onrender.com/api/v1/login/", {
+      const response = await fetch("https://api.peshekar.online/api/v1/login/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -301,7 +301,7 @@ function Login() {
                   className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 transition-colors"
                   onClick={togglePasswordVisibility}
                 >
-                  {showPassword ? <Eye size={16} /> : <EyeOff size={16} />} {/* FaEye, FaEyeSlash yerine Eye, EyeOff */}
+                  {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
                 </button>
                 {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
               </div>
