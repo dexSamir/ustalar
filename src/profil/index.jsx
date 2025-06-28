@@ -82,7 +82,7 @@ export default function ProfilePage() {
               link: response.data.linkedin,
             },
           ].filter((item) => item.link)
-        ); 
+        );
       })
       .catch((error) => {
         console.error("Error fetching profile:", error);
@@ -110,20 +110,20 @@ export default function ProfilePage() {
           alt=""
           className="absolute right-0 top-0"
         />
-       <img
-  src={
-    profileData?.profile_image
-      ? profileData.profile_image
-      : "./src/assets/profil.png"
-  }
-  alt="Profile"
-  onClick={() => handleImage(profileData.profile_image)}
-  className="w-38 h-38 rounded-full mx-auto object-cover"
-/>
+        <img
+          src={
+            profileData?.profile_image
+              ? profileData.profile_image
+              : "./src/assets/profil.png"
+          }
+          alt="Profile"
+          onClick={() => handleImage(profileData.profile_image)}
+          className="w-38 h-38 rounded-full mx-auto object-cover"
+        />
       </div>
       <div className="text-center w-[100%]">
         <h2 className="text-[35px] font-semibold m-4 text-cyan-900">
-          {profileData.full_name} 
+          {profileData.full_name}
         </h2>
         <p className="text-sm text-center w-[100%] text-gray-600 m">
           ID: {profileData.id}
@@ -164,18 +164,19 @@ export default function ProfilePage() {
         Gördüyünüz işlər
       </h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 ml-3 gap-6">
-        {profileData.work_images.map((src, index) => (
-          <div
-            key={index}
-            className="w-full aspect-square overflow-hidden rounded-2xl"
-          >
-            <img
-              src={src.replace('İş Şəkli ','')}
-              alt={`İş ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ))}
+        {Array.isArray(profileData.work_images) &&
+          profileData.work_images.map((src, index) => (
+            <div
+              key={index}
+              className="w-full aspect-square overflow-hidden rounded-2xl"
+            >
+              <img
+                src={src.replace("İş Şəkli ", "")}
+                alt={`İş ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ))}
       </div>
     </div>
   );
@@ -251,7 +252,8 @@ export const InfoCards = ({ profileData, isUseFor }) => {
                   {!isMoreLocation ? (
                     <span
                       className="text-cyan-400 cursor-pointer"
-                      onClick={() => setIsMoreLocation(true)}  src="../public/add.svg"
+                      onClick={() => setIsMoreLocation(true)}
+                      src="../public/add.svg"
                     >
                       daha çox...
                     </span>
