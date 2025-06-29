@@ -12,11 +12,9 @@ import cinssvg from "../assets/cins.svg";
 import closesvg from "../assets/close.svg";
 import datasvg from "../assets/data.svg";
 import educationsvg from "../assets/education.svg";
-import eyesvg from "../assets/eye.svg";
 import facebooksvg from "../assets/facebook.svg";
 import infosvg from "../assets/info.svg";
 import instagramsvg from "../assets/instagram.svg";
-import languagesvg from "../assets/language.svg";
 import linkedinsvg from "../assets/linkedin.svg";
 import locationsvg from "../assets/location.svg";
 import locksvg from "../assets/lock.svg";
@@ -33,9 +31,11 @@ import worksvg from "../assets/work.svg";
 import axios from "axios";
 import Sidebar from "../sidebar";
 import CitySelectionPopup from "./CitySelectionPopup";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Edit() {
   const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isProfileVisible, setIsProfileVisible] = useState(true);
   const [showPhotoPopup, setShowPhotoPopup] = useState(false);
   const [showSaveSuccessPopup, setShowSaveSuccessPopup] = useState(false);
@@ -44,12 +44,12 @@ export default function Edit() {
   const [uploadedImages, setUploadedImages] = useState([]);
   const [tempImagePreview, setTempImagePreview] = useState(null);
   const [zoom, setZoom] = useState(50);
-  const [selectedFile, setSelectedFile] = useState(null); // The actual file object for potential upload
-  const [openPopup, setOpenPopup] = useState(false); // Controls popup visibility
-  const [location, setLocation] = useState([]); // Stores cities fetched from API
-  const [selectedCities, setSelectedCities] = useState([]); // Stores selected cities by the user
-  const [citySearchTerm, setCitySearchTerm] = useState(""); // For filtering cities in the popup
-  const [activityAreaError, setActivityAreaError] = useState(false); // For validation feedback
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [openPopup, setOpenPopup] = useState(false);
+  const [location, setLocation] = useState([]);
+  const [selectedCities, setSelectedCities] = useState([]);
+  const [citySearchTerm, setCitySearchTerm] = useState("");
+  const [activityAreaError, setActivityAreaError] = useState(false);
   const [categories, setCategories] = useState([]);
   const [servicies, setServicies] = useState([]);
   const [language, setLanguage] = useState([]);
@@ -62,7 +62,6 @@ export default function Edit() {
   const [allServices, setAllServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]);
 
-  // State for Personal Information fields and their errors
   const [firstName, setFirstName] = useState("");
   const [firstNameError, setFirstNameError] = useState("");
   const [lastName, setLastName] = useState("");
@@ -86,44 +85,100 @@ export default function Edit() {
   const [workExperienceError, setWorkExperienceError] = useState("");
   const [activityArea, setActivityArea] = useState("");
   const [selectedImageFile, setSelectedImageFile] = useState(null);
-  const [profileImageSrc, setProfileImageSrc] = useState("/profil.jpg");
+  const [profileImageSrc, setProfileImageSrc] = useState(
+    "/placeholder.svg?height=120&width=120"
+  );
 
-  // State for Education and Skills fields and their errors
   const [educationLevel, setEducationLevel] = useState("");
   const [educationLevelError, setEducationLevelError] = useState("");
   const [educationSpecialization, setEducationSpecialization] = useState("");
   const [educationSpecializationError, setEducationSpecializationError] =
     useState("");
-  const [languageSkills, setLanguageSkills] = useState([]);
+  const [languages, setLanguages] = useState([]);
   const [languageSkillsError, setLanguageSkillsError] = useState("");
 
   const registrationDate = new Date("2025-08-11");
   const formattedRegistrationDate = format(registrationDate, "dd MMMM");
 
-  // Utility function to check for Azerbaijani characters
   const isAzerbaijaniLetter = (char) => {
     return /^[a-zA-ZçÇəƏğĞıİöÖşŞüÜ]+$/.test(char);
   };
 
+  const [socialLinks, setSocialLinks] = useState({
+    facebook: "",
+    instagram: "",
+    tiktok: "",
+    linkedin: "",
+  });
+
+  const educationMap = {
+    "Tam ali": 1,
+    "Natamam ali": 2,
+    Orta: 3,
+    "Peşə təhsili": 4,
+    "Orta ixtisas təhsili": 5,
+    Yoxdur: 6,
+  };
+
+  const genderMap = {
+    Qadın: "FEMALE",
+    Kişi: "MALE",
+  };
+
   useEffect(() => {
     const fetchUserData = async () => {
-      const token = localStorage.getItem("token");
+      let token = localStorage.getItem("authToken");
+
+      if (!token) {
+        await loginUser();
+        token = localStorage.getItem("authToken");
+      }
+
+      if (!token) {
+        console.error("Token yoxdur. Profil məlumatları alına bilməz.");
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await axios.get(
           "https://api.peshekar.online/api/v1/profile/",
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
+        console.log("Profil məlumatları:", response.data);
 
         const data = response.data;
+
+        let firstName = "";
+        let lastName = "";
+        if (data.full_name) {
+          const nameParts = data.full_name.split(" ");
+          firstName = nameParts[0] || "";
+          lastName = nameParts.slice(1).join(" ") || "";
+        }
+
         setUserData(data);
 
-        // State-ləri API-dan gələn məlumatlarla doldururuq
-        setFirstName(data.first_name || "");
-        setLastName(data.last_name || "");
+        const formattedWorkImages =
+          data.work_images?.map((item) => {
+            const url = item.replace("İş Şəkli ", "");
+            return {
+              url: url,
+              name: url.split("/").pop(),
+            };
+          }) || [];
+
+        setUploadedImages(formattedWorkImages);
+
+        setFirstName(firstName);
+        setLastName(lastName);
         setBirthDate(data.birth_date ? new Date(data.birth_date) : null);
-        setMobileNumber(data.mobile_number?.replace("+994", "") || "");
+        setMobileNumber(data.mobile_number || "");
+        setPassword(data.password || "");
         setGender(data.gender || "");
         setProfessionArea(data.profession_area?.id || "");
         setProfessionSpecialization(
@@ -136,21 +191,24 @@ export default function Edit() {
         setEducationLevel(data.education || "");
         setEducationSpecialization(data.education_speciality || "");
         setNote(data.note || "");
-        setLanguageSkills(data.languages?.map((lang) => lang.id) || []);
-        setProfileImageSrc(data.profile_image || "/profil.jpg");
+        setLanguages(data.languages?.map((lang) => lang.id) || []);
+        setProfileImageSrc(
+          data.profile_image || "/placeholder.svg?height=120&width=120"
+        );
 
-        // Şəhər və rayonlar
         if (data.cities || data.districts) {
           setCitiesForShow({
             cities: data.cities || [],
-            distinc: data.districts || [],
+            districts: data.districts || [],
           });
         }
 
-        // Şəkillər
-        if (data.work_images) {
-          setUploadedImages(data.work_images);
-        }
+        setSocialLinks({
+          facebook: data.facebook || "",
+          instagram: data.instagram || "",
+          tiktok: data.tiktok || "",
+          linkedin: data.linkedin || "",
+        });
       } catch (error) {
         console.error("Profil məlumatları yüklənərkən xəta:", error);
       } finally {
@@ -165,20 +223,19 @@ export default function Edit() {
     console.log(professionSpecialization);
   }, [professionSpecialization]);
 
-  // Login get Token
   const loginUser = async () => {
     try {
       const response = await axios.post(
         "https://api.peshekar.online/api/v1/login/",
         {
-          mobile_number: "514901950",
-          password: "Parol12345@",
+          mobile_number: mobileNumber,
+          password: password,
         }
       );
 
       const token = response.data.access || response.data.token;
       if (token) {
-        localStorage.setItem("token", token);
+        localStorage.setItem("authToken", token);
         console.log("Token alındı:", token);
       } else {
         console.error("Token cavabda tapılmadı:", response.data);
@@ -189,7 +246,7 @@ export default function Edit() {
   };
 
   const getProfile = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken");
 
     try {
       const response = await axios.get(
@@ -211,21 +268,25 @@ export default function Edit() {
   };
 
   const updateProfile = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken");
 
     const formData = new FormData();
 
-    if (firstName !== userData.first_name)
+    if (firstName !== userData.first_name) {
       formData.append("first_name", firstName);
-    if (lastName !== userData.last_name) formData.append("last_name", lastName);
+    }
+    if (lastName !== userData.last_name) {
+      formData.append("last_name", lastName);
+    }
 
     const formattedBirthDate = new Date(birthDate).toISOString().split("T")[0];
+
     if (birthDate !== userData.birth_date) {
       const formattedDate = birthDate ? format(birthDate, "yyyy-MM-dd") : "";
       formData.append("birth_date", formattedDate);
     }
     if (gender !== userData.gender)
-      formData.append("gender", gender.toUpperCase());
+      formData.append("gender", genderMap[gender]);
 
     if (mobileNumber !== userData.mobile_number?.replace("+994", "")) {
       formData.append("mobile_number", `+994${mobileNumber}`);
@@ -252,7 +313,7 @@ export default function Edit() {
       formData.append("experience_years", Number(workExperience));
     }
     if (educationLevel !== userData.education) {
-      formData.append("education", educationLevel);
+      formData.append("education", educationMap[educationLevel]);
 
       if (educationLevel === "Yoxdur") {
         formData.append("education_speciality", "");
@@ -270,26 +331,50 @@ export default function Edit() {
       formData.append("note", note);
     }
 
-    languageSkills.forEach((langId) => formData.append("languages", langId));
+    formData.delete("languages");
+    languages
+      .filter((langId) => !isNaN(langId))
+      .forEach((langId) => {
+        formData.append("languages", langId.toString());
+      });
 
     citiesForShow.cities.forEach((city) => {
       if (!userData.cities?.some((c) => c.id === city.id)) {
-        formData.append("cities", city.id);
+        formData.append("cities", Number(city.id));
       }
     });
 
-    citiesForShow.distinc.forEach((district) =>
-      formData.append("districts", district.id)
+    citiesForShow.districts.forEach((district) =>
+      formData.append("districts", Number(district.id))
     );
 
     userData.cities?.forEach((city) => {
       if (!citiesForShow.cities.some((c) => c.id === city.id)) {
-        formData.append("remove_cities", city.id);
+        formData.append("remove_cities", Number(city.id));
       }
     });
 
     if (selectedImageFile) {
       formData.append("profile_image", selectedImageFile);
+    }
+
+    uploadedImages.forEach((image) => {
+      if (image.file instanceof File) {
+        formData.append("work_images", image.file);
+      }
+    });
+
+    if (socialLinks.facebook !== userData.facebook) {
+      formData.append("facebook", socialLinks.facebook);
+    }
+    if (socialLinks.instagram !== userData.instagram) {
+      formData.append("instagram", socialLinks.instagram);
+    }
+    if (socialLinks.tiktok !== userData.tiktok) {
+      formData.append("tiktok", socialLinks.tiktok);
+    }
+    if (socialLinks.linkedin !== userData.linkedin) {
+      formData.append("linkedin", socialLinks.linkedin);
     }
 
     console.log("🟡 Form məlumatları:");
@@ -307,7 +392,7 @@ export default function Edit() {
     console.log("experience_years:", workExperience);
     console.log("education:", educationLevel);
     console.log("education_speciality:", educationSpecialization);
-    console.log("languages:", languageSkills);
+    console.log("languages:", languages);
     console.log("profile_image:", selectedImageFile);
     console.log("Note", note);
     console.log(
@@ -316,7 +401,7 @@ export default function Edit() {
     );
     console.log(
       "Selected Districts (IDs):",
-      citiesForShow.distinc.map((d) => d.id)
+      citiesForShow.districts.map((d) => d.id)
     );
 
     console.log("📦 formData.entries():");
@@ -345,7 +430,7 @@ export default function Edit() {
   };
 
   const handleDeleteAccountClick = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken");
     setShowDeleteConfirmPopup(false);
 
     try {
@@ -360,7 +445,7 @@ export default function Edit() {
 
       console.log("Hesab uğurla silindi:", response.data);
 
-      localStorage.removeItem("token");
+      localStorage.removeItem("authToken");
     } catch (error) {
       console.error(
         "Hesab silinərkən xəta:",
@@ -419,12 +504,23 @@ export default function Edit() {
     return true;
   };
 
-  const validateBirthDate = (dateString) => {
-    if (!dateString) {
+  const validateBirthDate = (date) => {
+    if (!date) {
       setBirthDateError("Zəhmət olmasa, məlumatları daxil edin.");
       return false;
     }
-    const parsedDate = parse(dateString, "yyyy/MM/dd", new Date());
+
+    if (date instanceof Date) {
+      const minDate = subYears(new Date(), 15);
+      if (date > minDate) {
+        setBirthDateError("Yaşınız ən az 15 olmalıdır.");
+        return false;
+      }
+      setBirthDateError("");
+      return true;
+    }
+
+    const parsedDate = parse(date, "yyyy/MM/dd", new Date());
     if (!isValid(parsedDate)) {
       setBirthDateError("Düzgün tarix formatı daxil edin (İl/ay/gün).");
       return false;
@@ -514,7 +610,7 @@ export default function Edit() {
   };
 
   const validateActivityArea = (citiesData) => {
-    if (citiesData.cities.length === 0 && citiesData.distinc.length === 0) {
+    if (citiesData.cities.length === 0 && citiesData.districts.length === 0) {
       setActivityAreaError(
         "Zəhmət olmasa, fəaliyyət göstərdiyi ərazini seçin."
       );
@@ -687,17 +783,18 @@ export default function Edit() {
   };
 
   const handleLanguageSkillChange = (e) => {
-    const langId = Number.parseInt(e.target.value);
+    const langId = parseInt(e.target.value, 10);
+    if (isNaN(langId)) return;
 
     if (e.target.checked) {
-      setLanguageSkills((prev) => [...prev, langId]);
+      setLanguages((prev) => [...prev, langId]);
     } else {
-      setLanguageSkills((prev) => prev.filter((id) => id !== langId));
+      setLanguages((prev) => prev.filter((id) => id !== langId));
     }
   };
 
   const handleLanguageSkillsBlur = () => {
-    validateLanguageSkills(languageSkills);
+    validateLanguageSkills(languages);
   };
 
   async function handleLocation() {
@@ -711,8 +808,9 @@ export default function Edit() {
       console.error("Şəhərləri yükləmək mümkün olmadı:", error);
     }
   }
+
   useEffect(() => {
-    fetch("https://api.peshekar.online//api/v1/districts/")
+    fetch("https://api.peshekar.online/api/v1/districts/") // Removed extra slash
       .then((res) => res.json())
       .then((data) => {
         const baku = data.find((item) => item.display_name === "Bakı");
@@ -729,7 +827,6 @@ export default function Edit() {
     setIsBakuOpen((prev) => !prev);
   };
 
-  // Categories Side
   async function handleCategories() {
     try {
       const res = await fetch("https://api.peshekar.online/api/v1/services/");
@@ -750,19 +847,28 @@ export default function Edit() {
     const selectedCategoryId = Number.parseInt(e.target.value);
     setProfessionArea(selectedCategoryId);
 
+    const currentSpecialization = allServices.find(
+      (s) => s.id === professionSpecialization
+    );
+    if (
+      !currentSpecialization ||
+      currentSpecialization.category.id !== selectedCategoryId
+    ) {
+      setProfessionSpecialization("");
+    }
+
     const filtered = allServices.filter(
       (service) => service.category.id === selectedCategoryId
     );
     setFilteredServices(filtered);
   };
 
-  // Language Side
   async function handleLanguage() {
     try {
       const res = await fetch("https://api.peshekar.online/api/v1/languages/");
       const data = await res.json();
       setLanguage(data);
-      console.log("Fetched languages:", data); // Added console log for fetched languages
+      console.log("Fetched languages:", data);
     } catch (error) {
       console.error("Dilləri yükləmək mümkün olmadı:", error);
     }
@@ -775,11 +881,9 @@ export default function Edit() {
     handleLanguage();
   }, []);
 
-  // --- Form submission handler ---
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validate all fields and store their validation status
     const isFirstNameValid = validateFirstName(firstName);
     const isLastNameValid = validateLastName(lastName);
     const isBirthDateValid = validateBirthDate(birthDate);
@@ -791,14 +895,13 @@ export default function Edit() {
       professionSpecialization
     );
     const isWorkExperienceValid = validateWorkExperience(workExperience);
-    const isActivityAreaValid = validateActivityArea(citiesForShow); // Use citiesForShow for validation
+    const isActivityAreaValid = validateActivityArea(citiesForShow);
     const isEducationLevelValid = validateEducationLevel(educationLevel);
     const isEducationSpecializationValid = validateEducationSpecialization(
       educationSpecialization
     );
-    const isLanguageSkillsValid = validateLanguageSkills(languageSkills);
+    const isLanguageSkillsValid = validateLanguageSkills(languages);
 
-    // If all fields are valid, proceed with form submission logic
     if (
       isFirstNameValid &&
       isLastNameValid &&
@@ -828,16 +931,15 @@ export default function Edit() {
             : professionSpecialization,
         workExperience,
         selectedCities: citiesForShow.cities.map((c) => c.id),
-        selectedDistricts: citiesForShow.distinc.map((d) => d.id),
+        selectedDistricts: citiesForShow.districts.map((d) => d.id),
         educationLevel,
         educationSpecialization,
-        languageSkills,
+        languages,
       });
       setShowSaveSuccessPopup(true);
-      updateProfile(); // Call updateProfile here
+      updateProfile();
     } else {
       console.log("Form has errors. Please correct them.");
-      // Re-run validations to ensure errors are displayed for empty fields
       validateFirstName(firstName);
       validateLastName(lastName);
       validateBirthDate(birthDate);
@@ -850,14 +952,13 @@ export default function Edit() {
       validateActivityArea(citiesForShow);
       validateEducationLevel(educationLevel);
       validateEducationSpecialization(educationSpecialization);
-      validateLanguageSkills(languageSkills);
+      validateLanguageSkills(languages);
     }
   };
 
-  // Existing handlers
   const handleSaveChanges = (e) => {
     e.preventDefault();
-    handleSubmit(e); // Call handleSubmit to trigger validation and update
+    handleSubmit(e);
   };
 
   const handleSaveSuccessOk = () => {
@@ -873,7 +974,12 @@ export default function Edit() {
   };
 
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
+    const files = Array.from(e.target.files).map((file) => ({
+      url: URL.createObjectURL(file),
+      name: file.name,
+      file: file,
+    }));
+
     setUploadedImages((prev) => [...prev, ...files]);
   };
 
@@ -896,9 +1002,8 @@ export default function Edit() {
 
   const handleDeleteAccountConfirm = () => {
     console.log("Account deletion confirmed!");
-    // In a real app, perform actual deletion (API call)
     setShowDeleteConfirmPopup(false);
-    setShowSuccessPopup(true); // Show success popup after confirming deletion
+    setShowSuccessPopup(true);
   };
 
   const handleSaveProfilePicture = () => {
@@ -915,19 +1020,16 @@ export default function Edit() {
     }
   };
 
-  // Handler for the profile visibility toggle switch
   const handleToggleProfile = () => {
     setIsProfileVisible(!isProfileVisible);
-    // In a real application, you'd send this state change to your backend
     console.log("Profile visibility toggled to:", !isProfileVisible);
   };
 
   const handleEditProfilePicture = () => {
     setShowPhotoPopup(true);
-    // When opening, set the preview to the current profile picture
     setTempImagePreview(profileImageSrc);
-    setSelectedFile(null); // Clear any previously selected file
-    setZoom(50); // Reset zoom
+    setSelectedFile(null);
+    setZoom(50);
   };
   const handleClosePhotoPopup = () => {
     setShowPhotoPopup(false);
@@ -949,61 +1051,70 @@ export default function Edit() {
     handleFileChange(event);
   };
 
-  // Handler for "Sil" (Delete) inside the photo popup
   const handleDeleteImageInPopup = () => {
     setTempImagePreview(null);
     setSelectedFile(null);
-    // In a real app, you might set a default avatar or mark for deletion on save
   };
 
   const handleConfirmImage = () => {
     if (tempImagePreview && containerRef.current) {
       const image = new Image();
       image.src = tempImagePreview;
-      image.crossOrigin = "anonymous"; // Set crossOrigin for canvas drawing
+      image.crossOrigin = "anonymous";
 
       image.onload = () => {
-        const canvasSize = 220;
+        const canvasSize = containerRef.current.offsetWidth;
         const canvas = document.createElement("canvas");
         canvas.width = canvasSize;
         canvas.height = canvasSize;
         const ctx = canvas.getContext("2d");
 
-        const scale = 1 + (zoom - 50) / 100;
+        const normalizedZoom = zoom / 100;
+        const scale = normalizedZoom < 0.5 ? 0.5 : normalizedZoom;
 
-        // Preview konteynerin ölçüsü
         const previewWidth = containerRef.current.offsetWidth;
         const previewHeight = containerRef.current.offsetHeight;
 
-        // Şəkil orijinal ölçüdə və zoom ilə birlikdə çəkilir
         const scaledWidth = image.width * scale;
         const scaledHeight = image.height * scale;
 
-        // Drag koordinatlarını scale ilə düzəlt
         const relativeX = dragPosition.x * (image.width / previewWidth);
         const relativeY = dragPosition.y * (image.height / previewHeight);
 
-        const offsetX = (canvasSize - scaledWidth) / 2 + relativeX;
-        const offsetY = (canvasSize - scaledHeight) / 2 + relativeY;
+        const offsetX = canvasSize / 2 - scaledWidth / 2 - dragPosition.x;
+        const offsetY = canvasSize / 2 - scaledHeight / 2 - dragPosition.y;
 
-        // Dairəni çək və clip et
         ctx.beginPath();
         ctx.arc(canvasSize / 2, canvasSize / 2, canvasSize / 2, 0, Math.PI * 2);
         ctx.closePath();
         ctx.clip();
 
-        // Şəkli çək
         ctx.drawImage(image, offsetX, offsetY, scaledWidth, scaledHeight);
 
         const finalImage = canvas.toDataURL("image/png");
         setProfileImageSrc(finalImage);
         handleClosePhotoPopup();
+
+        const blob = dataURLtoBlob(finalImage);
+        const file = new File([blob], "profile.png", { type: "image/png" });
+        setSelectedImageFile(file);
       };
     } else {
-      setProfileImageSrc("/profile.png");
+      setProfileImageSrc("/placeholder.svg?height=220&width=220");
       handleClosePhotoPopup();
     }
   };
+
+  function dataURLtoBlob(dataURL) {
+    const byteString = atob(dataURL.split(",")[1]);
+    const mimeString = dataURL.split(",")[0].split(":")[1].split(";")[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], { type: mimeString });
+  }
 
   const handleZoomChange = (event) => {
     setZoom(Number.parseInt(event.target.value));
@@ -1017,15 +1128,12 @@ export default function Edit() {
     setZoom((prevZoom) => Math.max(prevZoom - 10, 0));
   };
 
-  // Handler for the profile visibility toggle switch
   const handleToggleProfileVisibility = () => {
     setIsProfileVisible(!isProfileVisible);
-    // In a real application, you'd send this state change to your backend
     console.log("Profile visibility toggled to:", !isProfileVisible);
   };
-  //------------------------Drag------------------------------
   const onDragEnd = (result) => {
-    if (!result.destination) return; // boş sahəyə buraxılanda çıxır
+    if (!result.destination) return;
 
     const items = Array.from(uploadedImages);
     const [reorderedItem] = items.splice(result.source.index, 1);
@@ -1034,14 +1142,13 @@ export default function Edit() {
     setUploadedImages(items);
   };
 
-  //------------------------------------LOCATION--------------------------------
   const handleActivityAreaClick = () => {
     setOpenPopup(true);
   };
 
   const handleCloseActivityAreaPopup = () => {
     setOpenPopup(false);
-    setCitySearchTerm(""); // Clear search term when closing
+    setCitySearchTerm("");
   };
 
   const handleCityCheckboxChange = (city) => {
@@ -1065,7 +1172,6 @@ export default function Edit() {
   };
 
   const handleSelectAllCities = () => {
-    // Select all visible cities from the filtered list
     const allVisibleCities = filteredCities.map((city) => city.display_name);
     setSelectedCities(allVisibleCities);
   };
@@ -1075,19 +1181,15 @@ export default function Edit() {
   };
 
   const handleConfirmActivityAreaSelection = () => {
-    // Basic validation: ensure at least one city is selected
     if (selectedCities.length === 0) {
       setActivityAreaError(true);
-      // You could also show a toast notification or a more prominent message
       return;
     }
     setActivityAreaError(false);
     console.log("Confirmed Activity Areas:", selectedCities);
-    // In a real application, you would typically send 'selectedCities' to your backend here
-    setOpenPopup(false); // Close the popup after confirmation
+    setOpenPopup(false);
   };
 
-  // Filter cities based on search term for display in the popup
   const normalizeAz = (str) => {
     return str
       .toLowerCase()
@@ -1104,7 +1206,6 @@ export default function Edit() {
     normalizeAz(city.display_name).includes(normalizeAz(citySearchTerm))
   );
 
-  // Drag process in Porfile
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
@@ -1135,7 +1236,7 @@ export default function Edit() {
   console.log("uploadedImages:", uploadedImages);
   const [citiesForShow, setCitiesForShow] = useState({
     cities: [],
-    distinc: [],
+    districts: [],
   });
   const handleChildData = (dataFromChild) => {
     console.log("Data from CitySelectionPopup:", dataFromChild);
@@ -1149,7 +1250,7 @@ export default function Edit() {
         id: item.id,
         display_name: item.display_name,
       })),
-      distinc: [...dataFromChild.selectedDistrictsForShow].map((item) => ({
+      districts: [...dataFromChild.selectedDistrictsForShow].map((item) => ({
         id: item.id,
         display_name: item.display_name,
       })),
@@ -1164,13 +1265,12 @@ export default function Edit() {
   return (
     <div className="flex">
       <Sidebar />
-      {/* Main Content */}
       <div className="w-[63.4rem] bg-[#F9FAFB] flex-grow">
         <div className="w-[66.4rem] m-auto flex justify-between items-start pt-5">
           <div className="flex gap-[1.4rem] items-center">
             <div className="relative">
               <img
-                src={profileImageSrc || "/placeholder.svg"}
+                src={profileImageSrc || "/placeholder.svg?height=120&width=120"}
                 alt="profil-image"
                 className="w-[120px] h-[120px] object-cover object-[80%_20%] rounded-full"
               />
@@ -1201,30 +1301,29 @@ export default function Edit() {
             </div>
             <div
               className={`
-              relative w-[3rem] h-[1.5rem] cursor-pointer rounded-full flex items-center transition-colors duration-300
-              ${
-                isProfileVisible
-                  ? "bg-[#CDE4F2] justify-end"
-                  : "bg-gray-300 justify-start"
-              }
-            `}
+          relative w-[3rem] h-[1.5rem] cursor-pointer rounded-full flex items-center transition-colors duration-300
+          ${
+            isProfileVisible
+              ? "bg-[#CDE4F2] justify-end"
+              : "bg-gray-300 justify-start"
+          }
+        `}
               onClick={handleToggleProfile}
             >
               <div
                 className={`
-                w-[1.3rem] h-[1.2rem] rounded-full shadow-md transition-transform duration-300
-                ${
-                  isProfileVisible
-                    ? "bg-[#3187B8] transform translate-x-[0.3rem] mr-1"
-                    : "bg-white transform translate-x-[0.15rem]"
-                }
-              `}
+            w-[1.3rem] h-[1.2rem] rounded-full shadow-md transition-transform duration-300
+            ${
+              isProfileVisible
+                ? "bg-[#3187B8] transform translate-x-[0.3rem] mr-1"
+                : "bg-white transform translate-x-[0.15rem]"
+            }
+          `}
               ></div>
             </div>
           </div>
         </div>
 
-        {/* Personal Information Section */}
         <div className="w-100% bg-white mt-7">
           <div className="w-[66.4rem] m-auto py-5">
             <div className="flex items-center gap-3">
@@ -1290,7 +1389,7 @@ export default function Edit() {
                   )}
                 </div>
               </div>
-              {/* Last Name Field */}
+
               <div>
                 <div className="flex gap-[4px]">
                   <img
@@ -1319,7 +1418,7 @@ export default function Edit() {
                   )}
                 </div>
               </div>
-              {/* Birth Date Field */}
+
               <div>
                 <div className="flex gap-[4px]">
                   <img
@@ -1345,7 +1444,7 @@ export default function Edit() {
                     dateFormat="yyyy/MM/dd"
                     placeholderText="İl / ay / gün"
                     locale={az}
-                    maxDate={subYears(new Date(), 15)} // Bu 15 yaşdan cavan tarixləri təqvimdə deaktiv edir
+                    maxDate={subYears(new Date(), 15)}
                     showMonthDropdown
                     showYearDropdown
                     dropdownMode="select"
@@ -1370,7 +1469,7 @@ export default function Edit() {
 
                       e.target.value = formatted;
                       setBirthDate(formatted);
-                      validateBirthDate(formatted); // Validate manual input
+                      validateBirthDate(formatted);
                     }}
                     onKeyDown={(e) => {
                       const allowedKeys = [
@@ -1398,7 +1497,6 @@ export default function Edit() {
                   )}
                 </div>
               </div>
-              {/* Mobile Number Field */}
               <div>
                 <div className="flex gap-[4px]">
                   <img
@@ -1435,7 +1533,6 @@ export default function Edit() {
                   )}
                 </div>
               </div>
-              {/* Password Field */}
               <div>
                 <div className="flex gap-[4px]">
                   <img
@@ -1458,12 +1555,13 @@ export default function Edit() {
                       onChange={handlePasswordChange}
                       onBlur={handlePasswordBlur}
                     />
-                    <img
+                    <button
+                      type="button"
                       onClick={handleChangeVisible}
-                      src={`${visible ? eyesvg : "/invisible.svg"}`}
-                      alt="eye-icon"
-                      className="w-6 h-5 absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
-                    />
+                      className="w-6 h-5 absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-[#1A4862]"
+                    >
+                      {visible ? <Eye size={20} /> : <EyeOff size={20} />}
+                    </button>
                   </div>
                   {passwordError && (
                     <p className="w-[450px] text-[#EF4444] text-[.8rem] mt-1">
@@ -1472,7 +1570,6 @@ export default function Edit() {
                   )}
                 </div>
               </div>
-              {/* Gender Selection */}
               <div>
                 <div className="flex gap-[4px]">
                   <img
@@ -1519,7 +1616,6 @@ export default function Edit() {
           </div>
         </div>
 
-        {/* Professional Information Section */}
         <div className="w-100% bg-white mt-7">
           <div className="w-[66.4rem] m-auto py-5">
             <div className="flex items-center gap-3">
@@ -1536,7 +1632,6 @@ export default function Edit() {
               action=""
               className="mt-5 flex justify-between flex-wrap gap-7"
             >
-              {/* Peşə sahəsi */}
               <div>
                 <div className="flex gap-[4px] mb-1">
                   <img
@@ -1548,7 +1643,6 @@ export default function Edit() {
                   <p className="text-[#EF4444] text-[1rem]">*</p>
                 </div>
 
-                {/* Relative div => custom ox üçün */}
                 <div className="relative w-[27.5rem]">
                   <select
                     className={`w-full h-[3rem] border ${
@@ -1556,7 +1650,7 @@ export default function Edit() {
                         ? "border-red-500"
                         : "border-[#C3C8D1]"
                     } 
-        rounded-lg outline-none pr-10 pl-3 text-[#1A4862] font-semibold appearance-none`}
+    rounded-lg outline-none pr-10 pl-3 text-[#1A4862] font-semibold appearance-none`}
                     value={professionArea}
                     onChange={handleProfessionAreaChange}
                     onBlur={handleProfessionAreaBlur}
@@ -1569,7 +1663,6 @@ export default function Edit() {
                     ))}
                   </select>
 
-                  {/* Sağda custom SVG oxu */}
                   <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
                     <svg
                       className="w-5 h-5 text-[#1A4862]"
@@ -1592,7 +1685,6 @@ export default function Edit() {
                 )}
               </div>
 
-              {/* Peşə ixtisası */}
               <div>
                 <div className="flex gap-[4px] mb-1">
                   <img
@@ -1621,10 +1713,9 @@ export default function Edit() {
                         {service.display_name}
                       </option>
                     ))}
-                    <option value="other">Digər</option> {/* "Digər" seçimi */}
+                    {professionArea && <option value="other">Digər</option>}
                   </select>
 
-                  {/* Sağda custom SVG oxu */}
                   <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
                     <svg
                       className="w-5 h-5 text-[#1A4862]"
@@ -1664,7 +1755,6 @@ export default function Edit() {
                 )}
               </div>
 
-              {/* İş təcrübəsi */}
               <div>
                 <div className="flex gap-[4px]">
                   <img
@@ -1697,11 +1787,7 @@ export default function Edit() {
                   </p>
                 )}
               </div>
-              {/* Fəaliyyət göstərdiyi ərazi */}
               <div className="flex gap-[4px]">
-                {/* Placeholder for other form fields */}
-
-                {/* --- Fəaliyyət ərazisi (Activity Area) - Custom Select UI --- */}
                 <div className="mb-4">
                   <div className="flex gap-[4px]">
                     <img
@@ -1718,7 +1804,6 @@ export default function Edit() {
                     <p className="text-[#EF4444] text-[1rem]">*</p>
                   </div>
                   <input
-
                     type="text"
                     readOnly
                     onClick={() => {
@@ -1729,21 +1814,21 @@ export default function Edit() {
                     }}
                     placeholder={
                       citiesForShow.cities.length > 0 ||
-                      citiesForShow.distinc.length > 0
+                      citiesForShow.districts.length > 0
                         ? [
                             ...citiesForShow.cities.map(
                               (item) => item.display_name
                             ),
-                            ...citiesForShow.distinc.map(
+                            ...citiesForShow.districts.map(
                               (item) => item.display_name
                             ),
-                          ].join(", ") // Join array elements for display
+                          ].join(", ")
                         : "Ərazi seç"
                     }
                     className={`w-[27.5rem] h-[3rem] border ${
                       activityAreaError ? "border-red-500" : "border-[#C3C8D1]"
                     } rounded-lg outline-none p-2 text-[#1A4862] font-semibold`}
-                    onBlur={handleActivityAreaBlur} // Add onBlur for validation
+                    onBlur={handleActivityAreaBlur}
                   />
                   {activityAreaError && (
                     <p className="text-red-500 text-sm mt-1">
@@ -1756,7 +1841,6 @@ export default function Edit() {
           </div>
         </div>
 
-        {/* Education and Skills Section */}
         <div className="w-100% bg-white mt-7">
           <div className="w-[66.4rem] m-auto py-5">
             <div className="flex items-center gap-3">
@@ -1774,7 +1858,6 @@ export default function Edit() {
               action=""
               className="mt-5 flex justify-between flex-wrap gap-7"
             >
-              {/* Təhsil */}
               <div>
                 <div className="flex gap-[4px]">
                   <img
@@ -1871,7 +1954,6 @@ export default function Edit() {
                   </p>
                 )}
               </div>
-              {/* Təhsil ixtisası */}
               <div>
                 <div className="flex gap-[4px]">
                   <img
@@ -1899,7 +1981,7 @@ export default function Edit() {
                     value={educationSpecialization}
                     onChange={handleEducationSpecializationChange}
                     onBlur={handleEducationSpecializationBlur}
-                    disabled={educationLevel === "Yoxdur"} // Disable if "Yoxdur" is selected
+                    disabled={educationLevel === "Yoxdur"}
                   />
                   {educationLevel !== "Yoxdur" &&
                     educationSpecializationError && (
@@ -1927,7 +2009,7 @@ export default function Edit() {
                         name="language"
                         id={`language-${lang.id}`}
                         value={lang.id}
-                        checked={languageSkills.includes(lang.id)}
+                        checked={languages.includes(lang.id)}
                         onChange={handleLanguageSkillChange}
                         onBlur={handleLanguageSkillsBlur}
                       />
@@ -1947,7 +2029,6 @@ export default function Edit() {
           </div>
         </div>
 
-        {/* Additional Information Section */}
         <div className="w-100% bg-white mt-7">
           <div className="w-[66.4rem] m-auto py-5">
             <div className="flex items-center gap-3">
@@ -1984,7 +2065,7 @@ export default function Edit() {
                   />
                   <p className="text-[.8rem] mt-1">JPG/PNG</p>
                 </div>
-                {/* Dynamically rendered uploaded images */}
+
                 <DragDropContext onDragEnd={onDragEnd}>
                   <Droppable droppableId="images" direction="horizontal">
                     {(provided) => (
@@ -2011,11 +2092,7 @@ export default function Edit() {
                                 {...provided.dragHandleProps}
                               >
                                 <img
-                                  src={
-                                    typeof image === "string"
-                                      ? image
-                                      : URL.createObjectURL(image)
-                                  }
+                                  src={image.url}
                                   alt={`uploaded-image-${index}`}
                                   className="w-full h-full object-cover"
                                   draggable={false}
@@ -2062,14 +2139,15 @@ export default function Edit() {
                   alt="facebook-icon"
                   className="w-5 h-5"
                 />
-                <a
-                  href="https://www.facebook.com/creative.elchin"
-                  target="_blank"
+                <input
+                  type="text"
+                  placeholder="Facebook linki"
                   className="w-full outline-none text-[#1A4862] font-semibold"
-                  rel="noreferrer"
-                >
-                  https://www.facebook.com/creative.elchin
-                </a>
+                  value={socialLinks.facebook}
+                  onChange={(e) =>
+                    setSocialLinks({ ...socialLinks, facebook: e.target.value })
+                  }
+                />
               </div>
               <div className="flex items-center border border-[#C3C8D1] rounded-lg h-[3rem] mt-3 p-3 gap-3">
                 <img
@@ -2077,14 +2155,18 @@ export default function Edit() {
                   alt="instagram-icon"
                   className="w-5 h-5"
                 />
-                <a
-                  href="https://www.instagram.com/elchin.creative/"
-                  target="_blank"
+                <input
+                  type="text"
+                  placeholder="Instagram linki"
                   className="w-full outline-none text-[#1A4862] font-semibold"
-                  rel="noreferrer"
-                >
-                  https://www.instagram.com/elchin.creative/
-                </a>
+                  value={socialLinks.instagram}
+                  onChange={(e) =>
+                    setSocialLinks({
+                      ...socialLinks,
+                      instagram: e.target.value,
+                    })
+                  }
+                />
               </div>
               <div className="flex items-center border border-[#C3C8D1] rounded-lg h-[3rem] mt-3 p-3 gap-3">
                 <img
@@ -2092,14 +2174,15 @@ export default function Edit() {
                   alt="tiktok-icon"
                   className="w-5 h-5"
                 />
-                <a
-                  href="https://www.tiktok.com/@uxelchin"
-                  target="_blank"
+                <input
+                  type="text"
+                  placeholder="TikTok linki"
                   className="w-full outline-none text-[#1A4862] font-semibold"
-                  rel="noreferrer"
-                >
-                  https://www.tiktok.com/@uxelchin
-                </a>
+                  value={socialLinks.tiktok}
+                  onChange={(e) =>
+                    setSocialLinks({ ...socialLinks, tiktok: e.target.value })
+                  }
+                />
               </div>
               <div className="flex items-center border border-[#C3C8D1] rounded-lg h-[3rem] mt-3 p-3 gap-3">
                 <img
@@ -2107,20 +2190,20 @@ export default function Edit() {
                   alt="linkedin-icon"
                   className="w-5 h-5"
                 />
-                <a
-                  href="https://www.linkedin.com/in/elchin-design-12345/"
-                  target="_blank"
+                <input
+                  type="text"
+                  placeholder="LinkedIn linki"
                   className="w-full outline-none text-[#1A4862] font-semibold"
-                  rel="noreferrer"
-                >
-                  https://www.linkedin.com/in/elchin-design-12345/
-                </a>
+                  value={socialLinks.linkedin}
+                  onChange={(e) =>
+                    setSocialLinks({ ...socialLinks, linkedin: e.target.value })
+                  }
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* About You and Action Buttons Section */}
         <div className="w-100% bg-white mt-7 mb-7">
           <div className="w-[66.4rem] m-auto py-5">
             <div className="flex items-center gap-3">
@@ -2158,8 +2241,6 @@ export default function Edit() {
               </button>
 
               <form onSubmit={handleSaveChanges}>
-                {/* inputlar */}
-
                 <button
                   type="submit"
                   onClick={(e) => handleSubmit(e)}
@@ -2177,33 +2258,30 @@ export default function Edit() {
           </div>
         </div>
 
-        {/* Photo Upload Popup */}
         {showPhotoPopup && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-gray-200 p-6 rounded-lg shadow-lg w-[25rem]">
-              {/* Header with close button */}
               <div className="flex justify-center p-5 items-center mb-4">
                 <h2 className="text-xl font-bold text-[#1A4862]">
                   Şəkli dairəyə yerləşdirin.
                 </h2>
-                {/* <button onClick={handleClosePhotoPopup} className="text-gray-500 hover:text-gray-800 text-2xl font-bold">
-                     &times;
-                 </button> */}
+                <button
+                  onClick={handleClosePhotoPopup}
+                  className="text-gray-500 hover:text-gray-800 text-2xl font-bold"
+                >
+                  &times;
+                </button>
               </div>
 
-              {/* Image Cropping Area */}
               <div className="w-[22rem] relative bg-gray-100 rounded-lg overflow-hidden mb-6 flex items-center justify-center h-64">
                 {tempImagePreview ? (
                   <>
-                    {/* Image container for visual effect (without actual cropping) */}
                     <div className="relative w-[31rem] h-full flex items-center justify-center">
-                      {/* Blurred background image for effect */}
                       <img
                         src={tempImagePreview || "/placeholder.svg"}
                         alt="Background Blur"
                         className="w-full h-full object-cover blur-sm opacity-70"
                       />
-                      {/* The circular cropping mask and the actual image */}
                       <div
                         ref={containerRef}
                         className="w-[220px] h-[220px] rounded-full overflow-hidden border-2 border-white shadow-lg z-10 absolute"
@@ -2249,7 +2327,6 @@ export default function Edit() {
                   </div>
                 )}
               </div>
-              {/* "Şəkli dəyiş" and "Sil" buttons */}
               <div className="flex flex-col items-center mb-2 justify-center gap-1">
                 <label
                   htmlFor="change-photo-input"
@@ -2272,7 +2349,6 @@ export default function Edit() {
                 </button>
               </div>
 
-              {/* Zoom Slider and Text */}
               <div className="flex items-center justify-center gap-4 mb-3">
                 <span
                   className="text-xl text-gray-600 cursor-pointer"
@@ -2299,7 +2375,6 @@ export default function Edit() {
                 Böyütmək üçün sürüşdürün.
               </p>
 
-              {/* Action Buttons */}
               <div className="mt-6 flex justify-between gap-3">
                 <button
                   className="w-[9rem] cursor-pointer px-6 py-2 border bg-white border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors flex items-center justify-center gap-1"
@@ -2347,7 +2422,6 @@ export default function Edit() {
         )}
       </div>
 
-      {/* Save Success Popup */}
       {showSaveSuccessPopup && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[25rem] text-center">
@@ -2367,7 +2441,6 @@ export default function Edit() {
         </div>
       )}
 
-      {/* Delete Confirmation Popup */}
       {showDeleteConfirmPopup && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[25rem] text-center">
@@ -2394,7 +2467,6 @@ export default function Edit() {
           </div>
         </div>
       )}
-      {/* --- Success Popup --- */}
       {showSuccessPopup && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[25rem] text-center">
@@ -2409,7 +2481,6 @@ export default function Edit() {
           </div>
         </div>
       )}
-      {/* --showActivityAreaPopup- Activity Area Selection Popup --- */}
       {openPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm  bg-black/50">
           <div className="w-[65%] h-[90%] rounded-2xl bg-image overflow-hidden shadow-lg">
