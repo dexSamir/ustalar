@@ -52,7 +52,7 @@ const Sidebar = () => {
           {menu.map((item, idx) =>
             item.isLogout ? (
               <LogoutButton
-                key={idx}
+                key={`${item.label}-${idx}`}
                 className="flex items-center gap-3 w-full text-left p-3 rounded-xl transition-colors duration-200 cursor-pointer hover:bg-white/20"
                 onAfterLogout={() => setIsSidebarOpen(false)} 
               >
@@ -61,7 +61,7 @@ const Sidebar = () => {
               </LogoutButton>
             ) : (
               <button
-                key={idx}
+                key={`${item.label}-${idx}`}
                 onClick={() => {
                   setActiveMenu(item.label);
                   changePath(item.path);

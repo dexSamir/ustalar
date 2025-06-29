@@ -626,21 +626,15 @@ function Register() {
     setFormData((prev) => ({
       ...prev,
       cities: [
-        ...(dataFromChild.cities || []),
-        ...(dataFromChild.districts || []),
+        ...(dataFromChild.selectedCitiesForShow || []).map((city) => city.id),
+        ...(dataFromChild.selectedDistrictsForShow || []).map(
+          (district) => district.id
+        ),
       ],
     }));
     setCitiesForShow({
-      cities: [...(dataFromChild.selectedCitiesForShow || [])].map((item) => ({
-        id: item.id,
-        display_name: item.display_name,
-      })),
-      districts: [...(dataFromChild.selectedDistrictsForShow || [])].map(
-        (item) => ({
-          id: item.id,
-          display_name: item.display_name,
-        })
-      ),
+      cities: [...(dataFromChild.selectedCitiesForShow || [])],
+      districts: [...(dataFromChild.selectedDistrictsForShow || [])],
     });
     closePopup();
   };
@@ -1152,7 +1146,7 @@ function Register() {
                         ].join(", ")
                       : "Ərazi seç"
                   }
-                  className="w-full border p-2 rounded-md text-cyan-900 border-gray-200 bg-[rgba(195,200,209,1)] px-4 py-2  cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
+                  className="w-full border p-2 rounded-md text-cyan-900 border-gray-200 bg-[rgba(195,200,209,1)] px-4 py-2 cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
                 />
                 {formDataErrors.cities && (
                   <p className="text-red-500 text-sm mt-1">

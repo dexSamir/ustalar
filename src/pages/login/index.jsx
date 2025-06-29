@@ -116,9 +116,6 @@ function Login() {
         "https://api.peshekar.online/api/v1/login/",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             mobile_number: formData.mobile_number,
             password: formData.password,
