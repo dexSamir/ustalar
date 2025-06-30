@@ -15,7 +15,7 @@ import {
 import { FaUniversity } from "react-icons/fa";
 import { IoBuildOutline } from "react-icons/io5";
 import { BsCake, BsGenderMale } from "react-icons/bs";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import axios from "axios";
 
 export default function ProfilePage() {
