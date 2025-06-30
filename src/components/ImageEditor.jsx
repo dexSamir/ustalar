@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from "react"
 import { ArrowLeft, ArrowRight, RotateCcw, ZoomIn, ZoomOut } from "lucide-react"
 
@@ -147,9 +148,11 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 max-w-md mx-4 text-center">
-        <h3 className="text-lg font-semibold text-[#1A4862] mb-4">Şəkli dairəyə yerləşdirin</h3>
-        <div className="relative mb-4" ref={containerRef}>
+      <div className="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
+        {" "}
+        <h3 className="text-lg font-semibold text-[#1A4862] mb-6">Şəkli dairəyə yerləşdirin</h3>{" "}
+        <div className="relative mb-6" ref={containerRef}>
+          {" "}
           <canvas
             ref={canvasRef}
             className="w-64 h-64 mx-auto rounded-full cursor-move select-none"
@@ -159,7 +162,8 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
             onMouseLeave={handleMouseUp}
           />
         </div>
-        <div className="flex justify-center items-center gap-2 mb-4">
+        <div className="flex justify-center items-center gap-2 mb-6">
+          {" "}
           <button
             onClick={handleZoomOut}
             className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors"
@@ -186,7 +190,8 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
             <ZoomIn size={16} />
           </button>
         </div>
-        <div className="flex justify-center gap-2 mb-4">
+        <div className="flex justify-center gap-2 mb-6">
+          {" "}
           <button
             onClick={handleRotate}
             className="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm flex items-center gap-1 transition-colors"
@@ -201,18 +206,19 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
             Sıfırla
           </button>
         </div>
-        <p className="text-sm text-gray-600 mb-4">Şəkli sürüşdürərək yerini dəyişin və böyüklüyünü tənzimləyin</p>
+        <p className="text-sm text-gray-600 mb-6">Şəkli sürüşdürərək yerini dəyişin və böyüklüyünü tənzimləyin</p>{" "}
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 border border-[#1A4862] text-[#1A4862] py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            className="w-2/5 border border-[#1A4862] text-[#1A4862] py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2" 
           >
             <ArrowLeft className="w-4 h-4" />
             Geri
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 bg-[#1A4862] text-white py-3 rounded-lg font-medium hover:bg-[#1A4862]/90 transition-colors flex items-center justify-center gap-2"
+            className="w-3/5 bg-[#1A4862] text-white py-3 rounded-lg font-medium hover:bg-[#1A4862]/90 transition-colors flex items-center justify-center gap-2"
+            
           >
             Təsdiqlə
             <ArrowRight className="w-4 h-4" />
@@ -225,14 +231,14 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          background: #1A4862;
+          background: #1a4862;
           cursor: pointer;
         }
         .slider::-moz-range-thumb {
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          background: #1A4862;
+          background: #1a4862;
           cursor: pointer;
           border: none;
         }
