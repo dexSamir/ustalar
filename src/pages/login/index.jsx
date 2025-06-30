@@ -219,13 +219,8 @@ function Login() {
   };
 
   const handleForgotPassword = () => {
-    showModal(
-      "info",
-      "Şifrə Bərpası",
-      "Şifrə bərpası funksiyası tezliklə əlavə ediləcək. Dəstək üçün bizimlə əlaqə saxlayın.",
-      "Anladım"
-    );
-  };
+  navigate("/reset");
+};
 
   const formatMobileNumber = (value) => {
     const cleaned = value.replace(/\D/g, "");

@@ -9,6 +9,7 @@ import ProfilePage from "../profil";
 import Rey from "../pages/rey";
 import Edit from "../components/Edit";
 import Review from "../components/review";
+import ChangePassword from "../components/ChangePassword";
 
 export const router = createBrowserRouter([
   {
@@ -39,12 +40,17 @@ export const router = createBrowserRouter([
     path: "/rey",
     element: <Rey />,
   },
-   {
-    path: "/review/:masterId", 
+  {
+    path: "/review/:masterId",
     element: <Review />,
   },
   {
     path: "/edit",
     element: <Edit />,
+  },
+
+  {
+    path: "/reset",
+    element: <ChangePassword />,
   },
 ]);
