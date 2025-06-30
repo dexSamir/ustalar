@@ -15,6 +15,7 @@ import {
 import { FaUniversity } from "react-icons/fa";
 import { IoBuildOutline } from "react-icons/io5";
 import { BsCake, BsGenderMale } from "react-icons/bs";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import axios from "axios";
 
 export default function ProfilePage() {
@@ -159,28 +160,63 @@ export default function ProfilePage() {
     </div>
   );
 
-  const Gallery = ({ profileData }) => (
-    <div className="m-6">
-      <h3 className="text-[30px] m-5 font-semibold leading-tight text-cyan-900">
-        Gördüyünüz işlər
-      </h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 ml-3 gap-6">
-        {Array.isArray(profileData.work_images) &&
-          profileData.work_images.map((src, index) => (
-            <div
-              key={index}
-              className="w-full aspect-square overflow-hidden rounded-2xl"
-            >
-              <img
-                src={src.replace("İş Şəkli ", "")}
-                alt={`İş ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
+  const Gallery = ({ profileData }) => {
+    const [images, setImages] = useState(profileData?.work_images || []);
+
+    useEffect(() => {
+      setImages(profileData?.work_images || []);
+    }, [profileData]);
+
+    const handleDragEnd = (result) => {
+      if (!result.destination) return;
+
+      const reordered = Array.from(images);
+      const [moved] = reordered.splice(result.source.index, 1);
+      reordered.splice(result.destination.index, 0, moved);
+
+      setImages(reordered);
+    };
+
+    return (
+      <div className="m-6">
+        <h3 className="text-[30px] m-5 font-semibold leading-tight text-cyan-900">
+          Gördüyünüz işlər
+        </h3>
+
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="images" direction="horizontal">
+            {(provided) => (
+              <div
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 ml-3 gap-6"
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+              >
+                {images.map((src, index) => (
+                  <Draggable key={src} draggableId={src} index={index}>
+                    {(provided) => (
+                      <div
+                        className="w-full aspect-square overflow-hidden rounded-2xl cursor-move"
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        <img
+                          src={src.replace("İş Şəkli ", "")}
+                          alt={`İş ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       </div>
-    </div>
-  );
+    );
+  };
 
   const AboutSection = ({ profileData }) => (
     <div className="bg-gray-50 p-4 mt-[50px] rounded-xl shadow-md">

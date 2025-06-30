@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { az } from "date-fns/locale";
 import DatePicker from "react-datepicker";
@@ -34,6 +35,8 @@ import CitySelectionPopup from "./CitySelectionPopup";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function Edit() {
+  const navigate = useNavigate();
+
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isProfileVisible, setIsProfileVisible] = useState(true);
@@ -446,6 +449,11 @@ export default function Edit() {
       console.log("Hesab uğurla silindi:", response.data);
 
       localStorage.removeItem("authToken");
+      setShowSuccessPopup(true);
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (error) {
       console.error(
         "Hesab silinərkən xəta:",
@@ -2468,15 +2476,19 @@ export default function Edit() {
         </div>
       )}
       {showSuccessPopup && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[25rem] text-center">
-            <h2 className="text-xl font-bold text-green-600 mb-2">Uğurlu!</h2>
-            <p className="text-gray-600 mb-4">Hesabınız uğurla silindi.</p>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-md text-center max-w-sm w-full">
+            <h2 className="text-xl font-semibold text-green-600 mb-2">
+              Hesab silindi
+            </h2>
+            <p className="text-gray-700 mb-4">
+              Siz uğurla sistemdən çıxarıldınız.
+            </p>
             <button
-              className="cursor-pointer px-4 py-2 text-white rounded-lg bg-[#1A4862] hover:bg-[#2A5872] transition-colors"
-              onClick={handleSuccessPopupClose}
+              onClick={() => navigate("/login")}
+              className="bg-cyan-700 text-white px-4 py-2 rounded hover:bg-cyan-900 transition"
             >
-              Ok
+              Daxil ol
             </button>
           </div>
         </div>
