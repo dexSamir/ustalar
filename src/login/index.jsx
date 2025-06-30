@@ -340,7 +340,6 @@ function Login() {
                   onClick={togglePasswordVisibility}
                 >
                   {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}{" "}
-                  {/* FaEye, FaEyeSlash yerine Eye, EyeOff */}
                 </button>
                 {errors.password && (
                   <p className="text-red-500 text-xs mt-1">{errors.password}</p>

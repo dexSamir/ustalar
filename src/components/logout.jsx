@@ -40,9 +40,9 @@ const LogoutButton = ({
           body: JSON.stringify({ refresh: refreshToken }),
         });
 
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("user");
+
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("userData");
 
         if (typeof onAfterLogout === "function") {
           onAfterLogout();

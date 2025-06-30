@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
 import SuccessModal from "../../components/SuccessModal";
 import { Eye, EyeOff } from "lucide-react";
-import  backgroundpng  from "../../assets/background.png";
+import backgroundpng from "../../assets/background.png";
 
 function Login() {
   const navigate = useNavigate();
@@ -116,6 +116,9 @@ function Login() {
         "https://api.peshekar.online/api/v1/login/",
         {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             mobile_number: formData.mobile_number,
             password: formData.password,
@@ -144,7 +147,7 @@ function Login() {
         showModal(
           "success",
           "Giriş Uğurlu!",
-          "Hesabınıza uğurla daxil oldunuz. Ana səhifəyə yönləndirilirsiniz.",
+          "Hesabınıza uğurla daxil oldunuz. Profil səhifəsinə yönləndirilirsiniz.",
           "Davam et",
           "/profil"
         );
