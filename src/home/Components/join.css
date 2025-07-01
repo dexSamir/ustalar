@@ -150,3 +150,47 @@
   border-radius: 12px;
   }
 }
+
+
+
+.join-us-form input {
+  flex-grow: 1;
+  border: none;
+  background: transparent;
+  padding: 18px 20px;
+  font-size: 15px;
+  border-radius: 12px 0 0 12px;
+  outline: none;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.join-us-form input:focus {
+  box-shadow: 0 0 0 2px rgba(13, 90, 103, 0.3);
+}
+
+.button-loader {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.join-us-form button:disabled {
+  background-color: #4CAF50;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .join-us-form button {
+    padding: 18px 15px;
+    font-size: 14px;
+  }
+}

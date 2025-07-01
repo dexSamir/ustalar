@@ -1,16 +1,36 @@
-
 .component-container {
-  width: 90%;
-  
+  width: 100%;
+  padding-inline: 7%;
+
 }
 
-.main-profiles{
+.main-profiles {
+  width: 100%;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(30%, 1fr));
+  grid-auto-rows: 1fr;
+  min-content: unset;
+}
+
+
+@media screen and (max-width: 767px) {
+
+  .main-profiles {
     width: 100%;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    align-items:center;
-    row-gap: 20px ;
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)) !important;
+    grid-auto-rows: 1fr;
+    min-content: unset;
+  }
+
+}
+
+
+
+.profile-card {
+  width: 100% !important;
 }
 
 .categories-hero {
@@ -31,7 +51,7 @@
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  color:#111827;
+  color: #111827;
   font-weight: 600;
 }
 
@@ -43,7 +63,7 @@
 }
 
 .see-more-link:hover .arrow-icon {
-    transform: translateX(3px);
+  transform: translateX(3px);
 }
 
 .profile-card {
@@ -54,11 +74,11 @@
   overflow: hidden;
   transition: transform 0.2s ease-in-out;
 
-  &:hover{
+  &:hover {
     border: 1px solid #111827;
   }
 
-  &:hover .card-rating{
+  &:hover .card-rating {
     background-color: #469dcf;
   }
 }
@@ -74,6 +94,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: top;
 }
 
 .card-content {
@@ -86,6 +107,11 @@
 .card-info {
   display: flex;
   flex-direction: column;
+}
+
+.worker-data {
+  width: 200px;
+  word-wrap: break-word;
 }
 
 .card-title {
