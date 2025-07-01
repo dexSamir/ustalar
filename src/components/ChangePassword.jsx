@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import backgroundpng from "../assets/background.png";
 import { Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function EditPassword() {
+  const navigate = useNavigate();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [mobileNumber, setMobileNumber] = useState("");
   const [otpCode, setOtpCode] = useState(Array(6).fill(""));
@@ -32,6 +35,7 @@ export default function EditPassword() {
   }, [isCountingDown, countdown]);
 
   const navigateTo = (path) => {
+    navigate(path);
     console.log(`Navigating to: ${path}`);
   };
 
