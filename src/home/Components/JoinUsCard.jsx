@@ -10,24 +10,27 @@ const JoinUsCard = () => {
 
   const handlePhoneChange = (e) => {
     const value = e.target.value;
-    if (value.startsWith('+994') && value.length <= 13) {
-      setPhoneNumber(value);
-      setError(null);
+    
+    if (value.startsWith('+994')) {
+      const prefix = '+994';
+      const numbersOnly = prefix + value.slice(prefix.length).replace(/\D/g, '');
+      
+      if (numbersOnly.length <= 13) {
+        setPhoneNumber(numbersOnly);
+        setError(null);
+      }
     }
   };
 
   const formatPhoneForApi = (phone) => {
-    // Remove all non-digit characters
-    const digitsOnly = phone.replace(/\D/g, '');
-    return digitsOnly.startsWith('994') ? digitsOnly.substring(3) : digitsOnly;
+    return phone.replace(/\D/g, '').substring(3); 
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Basic validation
-    if (phoneNumber.length < 13) {
-      setError('Zəhmət olmasa düzgün nömrə daxil edin (+994XXXXXXXXX)');
+    if (phoneNumber.length !== 13) {
+      setError('Zəhmət olmasa düzgün nömrə daxil edin (+994501234567)');
       return;
     }
 
@@ -79,12 +82,13 @@ const JoinUsCard = () => {
           </p>
           <form className="join-us-form" onSubmit={handleSubmit}>
             <input 
-              placeholder="Nömrəni qeyd et" 
+              placeholder="+994501234567" 
               maxLength={13}
               value={phoneNumber}
               onChange={handlePhoneChange}
               type="tel"
               className="phone-input"
+              inputMode="numeric"
             />
             {error && <p className="error-message">{error}</p>}
             <button 

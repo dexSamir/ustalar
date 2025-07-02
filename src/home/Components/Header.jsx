@@ -27,7 +27,6 @@ function Header() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Load auth info
     const token = localStorage.getItem("authToken");
     const userData = localStorage.getItem("userData");
 
@@ -36,7 +35,6 @@ function Header() {
       setUser(JSON.parse(userData));
     }
 
-    // Fetch cities from API
     const fetchCities = async () => {
       try {
         const response = await fetch("https://api.peshekar.online/api/v1/cities/");
