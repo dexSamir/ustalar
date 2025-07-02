@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './categories.css';
 import { FiChevronDown } from 'react-icons/fi';
 import table from '../assets/table.svg';
@@ -7,8 +7,11 @@ import bor from '../assets/bor.svg';
 import mdi from '../assets/mdi.svg';
 import maki from '../assets/maki.svg';
 import sicon from '../assets/sicon.svg';
+import BurgerMenu from './BurgerMenu';
 
 const Categories = () => {
+  const [showBurger, setShowBurger] = useState(false);
+
   const categories = [
     { icon: table, title: "Mebel yığımı", workers: "90+ Usta" },
     { icon: paint, title: "Rəngsaz", workers: "150+ Usta" },
@@ -19,26 +22,30 @@ const Categories = () => {
   ];
 
   return (
-    <section className='categories-section'>
-      <div className="categories-header">
-        <h2>Kateqoriyalar</h2>
-        <div className="view-all">
-          Daha çox <FiChevronDown className="arrow-icon" />
-        </div>
-      </div>
-      
-      <div className="categories-grid">
-        {categories.map((category, index) => (
-          <div className="category-card" key={index}>
-            <img src={category.icon} alt={category.title} className='category-icon' />
-            <div className="category-info">
-              <h3>{category.title}</h3>
-              <p>{category.workers}</p>
-            </div>
+    <>
+      <section className='categories-section'>
+        <div className="categories-header">
+          <h2>Kateqoriyalar</h2>
+          <div className="view-all" onClick={() => setShowBurger(!showBurger)}>
+            Daha çox <FiChevronDown className="arrow-icon" />
           </div>
-        ))}
-      </div>
-    </section>
+        </div>
+
+        <div className="categories-grid">
+          {categories.map((category, index) => (
+            <div className="category-card" key={index}>
+              <img src={category.icon} alt={category.title} className='category-icon' />
+              <div className="category-info">
+                <h3>{category.title}</h3>
+                <p>{category.workers}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <BurgerMenu isOpen={showBurger} onClose={() => setShowBurger(false)} />
+    </>
   );
 };
 

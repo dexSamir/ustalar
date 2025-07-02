@@ -1,12 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@600;700&display=swap');
-*{
-  /* margin: 0; */
-  /* padding: 0; */
+@import url('https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&display=swap');
+
+
+* {
+  margin: 0;
+  padding: 0; 
   box-sizing: border-box;
   list-style: none;
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: "Geologica", sans-serif;
 }
-.wrapper{
+
+.wrapper {
   width: 100%;
   height: 100%;
   display: flex;
@@ -14,5 +17,5 @@
   align-items: center;
   justify-content: center;
   /* gap: 35px; */
-  background-color:#F9FAFB;
+  background-color: #F9FAFB;
 }

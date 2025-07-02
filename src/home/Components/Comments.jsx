@@ -65,9 +65,7 @@ const Comments = () => {
         <section className="testimonials-section">
             <div className="section-header">
                 <h2 className="section-title">Sizdən gələn rəylər</h2>
-                <a href="#" className="view-all-link">
-                    Daha çox <FiChevronDown className="arrow-icon" />
-                </a>
+                
             </div>
             
             <div className="testimonials-outer-container">

@@ -63,6 +63,14 @@
   display: flex;
   max-width: 500px;
   gap: 0.5rem;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 18px;
+  padding: 0.5rem;
+  -webkit-border-radius: 18px;
+  -moz-border-radius: 18px;
+  -ms-border-radius: 18px;
+  -o-border-radius: 18px;
 }
 
 .phone-input {
@@ -71,11 +79,14 @@
   background: #fff;
   padding: 1rem 1.5rem;
   font-size: 1rem;
-  border-radius: 12px;
+  border-radius:12px ;
   outline: none;
   color: #333;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  -webkit-border-radius:12px ;
+  -moz-border-radius:12px ;
+  -ms-border-radius:12px ;
+  -o-border-radius:12px ;
 }
 
 .phone-input:focus {
