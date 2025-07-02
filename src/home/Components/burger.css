@@ -60,6 +60,17 @@ top: 0;
   transform: translateY(0);
 }
 
+.category-content{
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.category-content img{
+width: 30px;
+margin-left: 0.8rem;
+}
+
 /* Header */
 .burger-header {
   padding: 1rem;

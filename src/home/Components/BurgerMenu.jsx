@@ -13,6 +13,7 @@ import gozelik from '../assets/gozellik.svg';
 import aile from '../assets/aile.svg';
 import ictimai from '../assets/ictimai.svg';
 
+
 const categoriesData = [
   {
     id: 'temir',
@@ -64,12 +65,6 @@ const BurgerMenu = ({ isOpen, onClose }) => {
       <div className="burger-overlay" onClick={onClose} />
       
       <div className="burger-menu">
-        {/* <div className="burger-header">
-          <button onClick={onClose} className="close-button">
-            <FiX size={24} />
-          </button>
-        </div> */}
-        
         <nav className="burger-nav">
           <ul className="category-list">
             {categoriesData.map((category) => (
@@ -79,7 +74,10 @@ const BurgerMenu = ({ isOpen, onClose }) => {
                   onClick={() => toggleCategory(category.id)}
                   aria-expanded={activeCategory === category.id}
                 >
-                  <span>{category.name}</span>
+                  <div className="category-content">
+                    <img src={category.icon} alt="" className="category-icon" />
+                    <span className="category-text">{category.name}</span>
+                  </div>
                   <FiChevronDown 
                     className={`arrow ${activeCategory === category.id ? 'open' : ''}`} 
                   />
