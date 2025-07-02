@@ -87,8 +87,10 @@
 /* Card Content */
 .card-content {
   display: flex;
+  /* flex-direction: column ; */
   justify-content: space-between;
   padding: 1.25rem;
+  gap: 2rem;
 }
 
 .card-info {

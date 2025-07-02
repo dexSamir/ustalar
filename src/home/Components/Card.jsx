@@ -1,29 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import './card.css';
-import { FiChevronDown, FiMapPin, FiStar } from 'react-icons/fi';
-
+import { FiChevronDown, FiChevronUp, FiMapPin, FiStar } from 'react-icons/fi';
+import { FiClock } from 'react-icons/fi';
 const Card = () => {
   const [professionals, setProfessionals] = useState([]);
+  const [displayedProfessionals, setDisplayedProfessionals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [nextPage, setNextPage] = useState(null);
+  const [showAll, setShowAll] = useState(false);
+  const initialDisplayCount = 8;
+
 
   useEffect(() => {
     fetchProfessionals();
   }, []);
+
+  useEffect(() => {
+    if (showAll) {
+      setDisplayedProfessionals(professionals);
+    } else {
+      setDisplayedProfessionals(professionals.slice(0, initialDisplayCount));
+    }
+  }, [professionals, showAll]);
 
   const fetchProfessionals = async (url = 'https://api.peshekar.online/api/v1/professionals/') => {
     setIsLoading(true);
     try {
       const response = await fetch(url);
       const data = await response.json();
-      
-      // Map the API data to our card format
+
       const mappedProfessionals = data.results.map(professional => ({
         id: professional.id,
         category: professional.profession_speciality,
         name: professional.full_name,
         location: professional.cities?.join(', ') || professional.districts?.join(', ') || '',
-        rating: professional.average_rating || 4.0, // Default rating if none provided
+        rating: professional.average_rating || 4.0,
         image: professional.profile_image,
         experience: professional.experience_years,
         education: professional.education,
@@ -40,15 +51,15 @@ const Card = () => {
   };
 
   const handleImageError = (e, id) => {
-    // Fallback image if profile image fails to load
     e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
-    e.target.onerror = null; // Prevent infinite loop
+    e.target.onerror = null;
   };
 
-  const loadMore = () => {
-    if (nextPage) {
+  const toggleShowAll = () => {
+    if (!showAll && nextPage && displayedProfessionals.length === professionals.length) {
       fetchProfessionals(nextPage);
     }
+    setShowAll(!showAll);
   };
 
   return (
@@ -56,10 +67,12 @@ const Card = () => {
       <div className="listings-header">
         <h2>Elanlar</h2>
         <div className="header-controls">
-          <button onClick={loadMore} className="see-more-link" disabled={!nextPage}>
-            <span>Daha Çox</span>
-            <FiChevronDown className="arrow-icon" />
-          </button>
+          {professionals.length > initialDisplayCount && (
+            <button onClick={toggleShowAll} className="see-more-link">
+              <span>{showAll ? 'Daha Az' : 'Daha Çox'}</span>
+              {showAll ? <FiChevronUp className="arrow-icon" /> : <FiChevronDown className="arrow-icon" />}
+            </button>
+          )}
         </div>
       </div>
 
@@ -67,7 +80,7 @@ const Card = () => {
         <div className="loading">Məlumatlar yüklənir...</div>
       ) : (
         <div className="listings-grid">
-          {professionals.map((professional) => (
+          {displayedProfessionals.map((professional) => (
             <div className="listing-card" key={professional.id}>
               <div className="card-image-container">
                 <img
@@ -86,9 +99,14 @@ const Card = () => {
                     <FiMapPin className="location-icon" />
                     <span>{professional.location}</span>
                   </div>
-                  <div className="card-experience">
+
+                  <div className="card-location">
+                    <FiClock className="location-icon" />
                     <span>Təcrübə: {professional.experience} il</span>
                   </div>
+                  {/* <div className="card-experience">
+                    <span>Təcrübə: {professional.experience} il</span>
+                  </div> */}
                 </div>
                 <div className="card-rating">
                   <FiStar className="star-icon" />
@@ -108,8 +126,6 @@ const Card = () => {
 };
 
 export default Card;
-
-
 
 // import React, { useState, useEffect } from 'react';
 // import './card.css';
