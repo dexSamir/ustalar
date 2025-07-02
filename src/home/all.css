@@ -4,7 +4,7 @@
   /* padding: 0; */
   box-sizing: border-box;
   list-style: none;
-  /* font-family: 'IBM Plex Sans', sans-serif; */
+  font-family: 'IBM Plex Sans', sans-serif;
 }
 .wrapper{
   width: 100%;
@@ -13,6 +13,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 35px;
+  /* gap: 35px; */
   background-color:#F9FAFB;
 }

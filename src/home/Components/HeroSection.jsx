@@ -1,13 +1,12 @@
 import './hero.css';
 import React from 'react';
-
 import heroBackgroundVideo from '../assets/headervid.mp4'; 
 import { Link } from 'react-router-dom';
+import { FiArrowRight } from 'react-icons/fi';
 
 function HeroSection() {
   return (
     <section className="hero-container">
-
       <video className="hero-background-video" autoPlay loop muted playsInline>
         <source src={heroBackgroundVideo} type="video/mp4" />
         Your browser does not support the video tag.
@@ -17,7 +16,12 @@ function HeroSection() {
         <div className="hero-content">
           <h1>İşinin peşəkarını axtarırsınız?</h1>
           <p>Yüzlərlə peşəkar arasından sizə uyğun olanı tapın.</p>
-          <Link to={"/ecom"}><button className="hero-button">Peşəkarlarla tanış ol</button></Link>
+          <Link to={"/ecom"}>
+            <button className="hero-button">
+              Peşəkarlarla tanış ol
+              <FiArrowRight className="button-icon" />
+            </button>
+          </Link>
         </div>
       </div>
     </section>

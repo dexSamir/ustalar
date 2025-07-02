@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './join.css';
-import professionalsImage from '../assets/join.svg';
+import professionalsImage from '../assets/join.png';
 
 const JoinUsCard = () => {
   const [phoneNumber, setPhoneNumber] = useState('+994');
@@ -29,40 +29,53 @@ const JoinUsCard = () => {
       
       setTimeout(() => {
         setIsSent(false);
+        setPhoneNumber('+994');
       }, 3000);
     }, 1500);
   };
 
   return (
-    <div className="join-us-card">
-      <div className="join-us-content">
-        <h2 className="join-us-title">
-          Aramıza qoşulmağa <br /> nə deyirsən?
-        </h2>
-        <p className="join-us-description">
-          Yüzlərlə peşəkar sırasına sən də qoşul!
-        </p>
-        <form className="join-us-form" onSubmit={handleSubmit}>
-          <input 
-            placeholder="Nömrəni qeyd et" 
-            maxLength={13}
-            value={phoneNumber}
-            onChange={handlePhoneChange}
-            type="tel"
+    <div className="join-us-container">
+      <div className="join-us-card">
+        <div className="join-us-content">
+          <h2 className="join-us-title">
+            Aramıza qoşulmağa <br /> nə deyirsən?
+          </h2>
+          <p className="join-us-description">
+            Yüzlərlə peşəkar sırasına sən də qoşul!
+          </p>
+          <form className="join-us-form" onSubmit={handleSubmit}>
+            <input 
+              placeholder="Nömrəni qeyd et" 
+              maxLength={13}
+              value={phoneNumber}
+              onChange={handlePhoneChange}
+              type="tel"
+              className="phone-input"
+            />
+            <button 
+              type="submit" 
+              disabled={isLoading || isSent}
+              className={`submit-button ${isLoading ? 'loading' : ''} ${isSent ? 'success' : ''}`}
+            >
+              {isLoading ? (
+                <span className="button-loader"></span>
+              ) : isSent ? (
+                '✓ Göndərildi!'
+              ) : (
+                'Qeydiyyatdan keç'
+              )}
+            </button>
+          </form>
+        </div>
+        <div className="join-us-image-container">
+          <img 
+            src={professionalsImage} 
+            alt="Peşəkarlar" 
+            className="professionals-image" 
+            loading="lazy"
           />
-          <button type="submit" disabled={isLoading || isSent}>
-            {isLoading ? (
-              <span className="button-loader"></span>
-            ) : isSent ? (
-              '✓ Göndərildi!'
-            ) : (
-              'Qeydiyyatdan keç'
-            )}
-          </button>
-        </form>
-      </div>
-      <div className="join-us-image-container">
-        <img src={professionalsImage} alt="Peşəkarlar" className="professionals-image" />
+        </div>
       </div>
     </div>
   );
