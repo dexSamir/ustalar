@@ -111,7 +111,7 @@ margin-left: 0.8rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 0.6rem 2.2rem 0.6rem 1.5rem;
   background: none;
   border: none;
   cursor: pointer;
@@ -145,6 +145,16 @@ margin-left: 0.8rem;
 .subcategory-item {
   padding: 0.75rem 1.5rem 0.75rem 3rem;
   border-bottom: 1px solid #eee;
+}
+
+.subcategory-item:hover{
+  padding: 0.75rem 1.5rem 0.75rem 3rem;
+  background-color: #e6e6e6;
+}
+
+.subcategory-item:hover li p{ 
+  color: black;
+
 }
 
 .subcategory-link {
