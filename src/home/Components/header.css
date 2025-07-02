@@ -9,9 +9,9 @@
 }
 
 /* Add padding to body to prevent content from being hidden behind header */
-body {
-  padding-top: 70px; /* Adjust based on your header height */
-}
+/* body {
+  padding-top: 70px; 
+} */
 
 /* Header Container */
 .header-container {

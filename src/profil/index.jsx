@@ -266,6 +266,7 @@ export default function ProfilePage() {
 
 export const InfoCards = ({ profileData, isUseFor }) => {
   const [isMoreLocation, setIsMoreLocation] = useState(false);
+
   return (
     <div className="grid gap-10 grid-cols-1 p-3 m-6 md:grid-cols-3">
       <div
@@ -286,22 +287,24 @@ export const InfoCards = ({ profileData, isUseFor }) => {
               <span className="text-gray-500">Fəaliyyət göstərdiyi ərazi:</span>
               {profileData?.cities?.length > 2 && (
                 <span className="font-semibold text-cyan-900 text-[16px]">
-                  {profileData?.cities?.slice(0, 2).join(", ") + ","}{" "}
+                  {profileData?.cities?.slice(0, 2).join(", ")}
                   {!isMoreLocation ? (
                     <span
                       className="text-cyan-400 cursor-pointer"
                       onClick={() => setIsMoreLocation(true)}
-                      src="../public/add.svg"
                     >
+                      {" "}
                       daha çox...
                     </span>
                   ) : (
-                    profileData?.cities
-                      ?.slice(2, profileData.cities.length)
-                      .join(", ")
+                    <>
+                      {", "}
+                      {profileData?.cities?.slice(2).join(", ")}
+                    </>
                   )}
                 </span>
               )}
+
               {profileData?.cities?.length <= 2 && (
                 <span className="font-semibold text-cyan-900 text-[16px]">
                   {profileData.cities}
@@ -315,7 +318,7 @@ export const InfoCards = ({ profileData, isUseFor }) => {
           <span className="flex flex-col">
             <span className="text-gray-500">Mobil nömrə:</span>
             <span className="font-semibold text-cyan-900 text-[16px] ">
-              {profileData?.mobile_number}
+              +994{profileData?.mobile_number}
             </span>
           </span>
         </p>

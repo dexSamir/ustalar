@@ -139,7 +139,7 @@ export default function EditPassword() {
 
       if (!passwordRegex.test(newPassword)) {
         setErrorMessage(
-          "Şifrə 7-15 simvol uzunluğunda olmalı, ən az bir böyük hərf, bir kiçik hərf, bir rəqəm və bir işarə (!@#$%^&*()_+) ehtiva etməlidir."
+          "Şifrəniz ən azı 8 simvoldan ibarət olmalı, özündə minimum bir böyük hərf, rəqəm və xüsusi simvol (məsələn: !, @, #, -, _, +) ehtiva etməlidir."
         );
         return;
       }

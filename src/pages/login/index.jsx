@@ -219,24 +219,28 @@ function Login() {
   };
 
   const handleForgotPassword = () => {
-  navigate("/reset");
-};
+    navigate("/reset");
+  };
 
   const formatMobileNumber = (value) => {
-    const cleaned = value.replace(/\D/g, "");
-    if (cleaned.length >= 6) {
-      return `${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(
-        5,
-        7
-      )} ${cleaned.slice(7, 9)}`;
-    } else if (cleaned.length >= 3) {
-      return `${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(
-        5
-      )}`;
-    } else if (cleaned.length >= 2) {
-      return `${cleaned.slice(0, 2)} ${cleaned.slice(2)}`;
+    const cleaned = value.replace(/\D/g, "").slice(0, 9);
+
+    let formatted = "";
+
+    if (cleaned.length > 0) {
+      formatted += cleaned.slice(0, 2);
     }
-    return cleaned;
+    if (cleaned.length > 2) {
+      formatted += " " + cleaned.slice(2, 5);
+    }
+    if (cleaned.length > 5) {
+      formatted += " " + cleaned.slice(5, 7);
+    }
+    if (cleaned.length > 7) {
+      formatted += " " + cleaned.slice(7, 9);
+    }
+
+    return formatted;
   };
 
   return (

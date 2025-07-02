@@ -1,17 +1,30 @@
+"use client"
 
 import { useNavigate } from "react-router-dom"
+
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io"
+
 import React, { useRef, useState, useEffect, useCallback } from "react"
+
 import { Eye, EyeOff, XCircle } from "lucide-react"
+
 import { az } from "date-fns/locale"
+
 import DatePicker from "react-datepicker"
+
 import "react-datepicker/dist/react-datepicker.css"
+
 import CitySelectionPopup from "../../components/CitySelectionPopup"
+
 import ImageEditor from "../../components/ImageEditor"
+
 import axios from "axios"
+
 import { format, subYears, isValid, parseISO } from "date-fns"
+
 import Swal from "sweetalert2"
-import backgroundpng from "../../assets/img.png"
+
+import Footer from "../../components/Footer"
 
 const cities = [
   "Ağcabədi",
@@ -130,12 +143,12 @@ function Register() {
   })
 
   const educationOptions = [
-    { id: 1, label: "Tam ali" },
-    { id: 2, label: "Natamam ali" },
-    { id: 3, label: "Orta" },
-    { id: 4, label: "Peşə təhsili" },
-    { id: 5, label: "Orta ixtisas təhsili" },
-    { id: 6, label: "Yoxdur" },
+    { id: 0, label: "Tam ali" },
+    { id: 1, label: "Natamam ali" },
+    { id: 2, label: "Orta" },
+    { id: 3, label: "Peşə təhsili" },
+    { id: 4, label: "Orta ixtisas təhsili" },
+    { id: 5, label: "Yoxdur" },
   ]
 
   const [socialMediaLinks, setSocialMediaLinks] = useState({
@@ -240,11 +253,9 @@ function Register() {
       setDraggedImageIndex(null)
       return
     }
-
     const newWorkImages = [...formData.work_images]
     const [draggedItem] = newWorkImages.splice(dragIndex, 1)
     newWorkImages.splice(dropIndex, 0, draggedItem)
-
     setFormData((prev) => ({
       ...prev,
       work_images: newWorkImages,
@@ -377,11 +388,9 @@ function Register() {
 
   const handleChange = (e) => {
     const { name, value, type, multiple, options } = e.target
-
     if (type === "password") {
       check_password_strength(value)
     }
-
     if (name === "profession_speciality") {
       if (value === "other") {
         setFormData((prev) => ({
@@ -463,7 +472,6 @@ function Register() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ mobile_number: fullNumber }),
         })
-
         const data = await res.json()
         if (res.status === 200 && data?.is_mobile_number) {
           setStep((prev) => prev + 1)
@@ -505,7 +513,6 @@ function Register() {
     formDataToSend.append("password2", formData.password2)
     formDataToSend.append("gender", formData.gender)
     formDataToSend.append("profession_area", formData.profession_area)
-
     if (formData.profession_speciality === otherServiceId) {
       formDataToSend.append("profession_speciality", formData.profession_speciality)
       formDataToSend.append("profession_speciality_other", formData.profession_speciality_other)
@@ -513,7 +520,6 @@ function Register() {
       formDataToSend.append("profession_speciality", formData.profession_speciality)
       formDataToSend.append("profession_speciality_other", "")
     }
-
     formDataToSend.append("experience_years", formData.experience_years)
     formData.cities.forEach((cityId) => formDataToSend.append("cities", cityId))
     formData.languages.forEach((langId) => formDataToSend.append("languages", langId))
@@ -536,7 +542,6 @@ function Register() {
 
     try {
       await axios.post("https://api.peshekar.online/api/v1/register/", formDataToSend)
-
       Swal.fire({
         title: "Qeydiyyat uğurludur!",
         text: "Davam etmək üçün 'Login' düyməsinə klikləyin.",
@@ -644,704 +649,708 @@ function Register() {
   }
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <div className="bg-[rgba(26,72,98,1)] h-[100px] sticky top-0 left-0 z-50 flex justify-between px-[20px] py-[20px]">
         <h2 className="text-white font-semibold text-[30px]">Paputi</h2>
         <p className="text-white cursor-pointer" onClick={handleClick}>
           Hesabınız var? Daxil olun
         </p>
       </div>
-      <div className="gradient-register flex flex-col justify-center items-center">
+
+      <div className="gradient-register text-center py-6">
         <h1 className="text-2xl md:text-3xl font-bold text-[#1A4852] mb-2 p-4 text-center">
           Peşə Sahibləri Platformasına <br /> Xoş Gəlmisiniz!
         </h1>
-        <p className="text-[#6C757D] p-3">Peşəkar xidmətlərinizi paylaşmaq üçün qeydiyyatdan keçin.</p>
+        <p className="text-[#6C757D]">Peşəkar xidmətlərinizi paylaşmaq üçün qeydiyyatdan keçin.</p>
       </div>
-      <div className="relative w-full min-h-screen ">
-        <img src={backgroundpng || "/placeholder.svg"} className="w-full h-[full] object-cover" alt="Background" />
-        <div className="absolute inset-0 flex justify-center items-start pt-[80px] bg-[rgba(0,0,0,0.25)]">
-          {step === 1 && (
-            <form className="bg-white/70 backdrop-blur-sm p-6 rounded-lg shadow-lg w-[90%] max-w-md">
-              <div className="flex justify-evenly ">
-                <div className="w-8 h-8 flex items-center justify-center rounded-full  bg-[rgba(26,72,98,1)] text-white ">
-                  1
-                </div>
-                <div className="w-[40px] h-[2px] bg-[rgba(195,200,209,1)] flex mt-3" />
-                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[rgba(195,200,209,1)] ">2</div>
-                <div className="w-[40px] h-[2px] bg-[rgba(195,200,209,1)] flex mt-3" />
-                <div className="w-8 h-8 flex items-center justify-center rounded-full  bg-[rgba(195,200,209,1)] ">
-                  3
-                </div>
+
+      <main className="flex-grow relative flex justify-center items-start py-[40px]">
+        <img src={"src/assets/background.png"} className="absolute inset-0 w-full h-full object-cover" alt="Background" />
+        <div className="absolute inset-0 bg-[rgba(0,0,0,0.25)]"></div>
+
+        {step === 1 && (
+          <form className="relative z-10 bg-white/70 backdrop-blur-sm p-6 rounded-lg shadow-lg w-[90%] max-w-md">
+            <div className="flex justify-evenly ">
+              <div className="w-8 h-8 flex items-center justify-center rounded-full  bg-[rgba(26,72,98,1)] text-white ">
+                1
               </div>
-              <p className="text-center text-cyan-900 font-semibold pt-4">Addım 1/3 </p>
-              <h2 className="text-cyan-900 font-semibold leading-[1.5] text-[25px] mt-5">Şəxsi məlumatlar</h2>
-              <div className="py-[15px]">
-                <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
-                  Ad <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  maxLength={20}
-                  name="first_name"
-                  value={formData.first_name}
-                  onChange={handleChange}
-                  onBlur={handleBlurValidation}
-                  onKeyDown={(e) => {
-                    const isControlKey = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"].includes(e.key)
-                    const isLetter = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİIА-Яа-яЁё]$/.test(e.key)
-                    if (!isLetter && !isControlKey) e.preventDefault()
-                  }}
-                  placeholder="Adınızı daxil edin"
-                  className={`${
-                    formDataErrors.first_name ? "border-red-600" : "border-gray-300"
-                  } outline-gray-200 w-full mt-1 p-2 text-[16px] border bg-white rounded-md`}
-                />
-                {formDataErrors.first_name && <p className="text-red-500 text-sm mt-1">{formDataErrors.first_name}</p>}
-              </div>
-              <div className="py-[10px]">
-                <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
-                  Soyad <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  maxLength={20}
-                  name="last_name"
-                  value={formData.last_name}
-                  onChange={handleChange}
-                  onBlur={handleBlurValidation}
-                  onKeyDown={(e) => {
-                    const isControlKey = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"].includes(e.key)
-                    const isLetter = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİIА-Яа-яЁё]$/.test(e.key)
-                    if (!isLetter && !isControlKey) e.preventDefault()
-                  }}
-                  placeholder="Soyadınızı daxil edin"
-                  className={`w-full mt-1 p-2 text-[16px] bg-white rounded-md outline-gray-200 ${
-                    formDataErrors.last_name ? "border-red-600" : "border-gray-300"
-                  } border`}
-                />
-                {formDataErrors.last_name && <p className="text-red-500 text-sm mt-1">{formDataErrors.last_name}</p>}
-              </div>
-              <div className="py-[10px]">
-                <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
-                  Doğum tarixi <span className="text-red-500">*</span>
-                </label>
-                <DatePicker
-                  selected={formData.birth_date}
-                  onChange={(date) => {
-                    setFormData((prev) => ({ ...prev, birth_date: date }))
-                    setFormDataErrors((prev) => ({
-                      ...prev,
-                      birth_date: getErrorMessage("birth_date", date),
-                    }))
-                  }}
-                  onBlur={handleBlurValidation}
-                  dateFormat="yyyy/MM/dd"
-                  placeholderText="İl / ay / gün"
-                  locale={az}
-                  maxDate={subYears(new Date(), 15)}
-                  showMonthDropdown
-                  showYearDropdown
-                  dropdownMode="select"
-                  calendarStartDay={1}
-                  className={`${
-                    formDataErrors.birth_date ? "border-red-600" : "border-gray-300"
-                  } outline-gray-200 w-full mt-1 p-2 text-[16px] border bg-white rounded-md text-gray-700`}
-                />
-                {formDataErrors.birth_date && <p className="text-red-500 text-sm mt-1">{formDataErrors.birth_date}</p>}
-              </div>
-              <div className="py-[10px]">
-                <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
-                  Mobil nömrə <span className="text-red-500">*</span>
-                </label>
-                <div className="mt-1">
-                  <div className="flex">
-                    <span className="bg-gray-100 px-4 py-2 border border-gray-300 border-r-0 rounded-l-md">+994</span>
-                    <input
-                      type="tel"
-                      name="mobile_number"
-                      value={formData.mobile_number}
-                      onChange={(e) => {
-                        const onlyNumbers = e.target.value.replace(/\D/g, "").slice(0, 9)
-                        setFormData((prev) => ({
-                          ...prev,
-                          mobile_number: onlyNumbers,
-                        }))
-                      }}
-                      onKeyDown={(e) => {
-                        const allowedKeys = ["Backspace", "ArrowLeft", "ArrowRight", "Tab"]
-                        if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
-                          e.preventDefault()
-                        }
-                      }}
-                      onBlur={handleBlurValidation}
-                      placeholder="501234567"
-                      className={`${
-                        formDataErrors.mobile_number ? "border-red-600" : "border-gray-300"
-                      } outline-gray-200 w-full p-2 text-[16px] border bg-white rounded-r-md`}
-                    />
-                  </div>
-                  {formDataErrors.mobile_number && (
-                    <p className="text-red-500 text-sm mt-1">{formDataErrors.mobile_number}</p>
-                  )}
-                </div>
-              </div>
-              <div className="py-[10px]">
-                <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
-                  Şifrə <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
+              <div className="w-[40px] h-[2px] bg-[rgba(195,200,209,1)] flex mt-3" />
+              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[rgba(195,200,209,1)] ">2</div>
+              <div className="w-[40px] h-[2px] bg-[rgba(195,200,209,1)] flex mt-3" />
+              <div className="w-8 h-8 flex items-center justify-center rounded-full  bg-[rgba(195,200,209,1)] ">3</div>
+            </div>
+            <p className="text-center text-cyan-900 font-semibold pt-4">Addım 1/3 </p>
+            <h2 className="text-cyan-900 font-semibold leading-[1.5] text-[25px] mt-5">Şəxsi məlumatlar</h2>
+            <div className="py-[15px]">
+              <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
+                Ad <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                maxLength={20}
+                name="first_name"
+                value={formData.first_name}
+                onChange={handleChange}
+                onBlur={handleBlurValidation}
+                onKeyDown={(e) => {
+                  const isControlKey = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"].includes(e.key)
+                  const isLetter = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİIА-Яа-яЁё]$/.test(e.key)
+                  if (!isLetter && !isControlKey) e.preventDefault()
+                }}
+                placeholder="Adınızı daxil edin"
+                className={`${
+                  formDataErrors.first_name ? "border-red-600" : "border-gray-300"
+                } outline-gray-200 w-full mt-1 p-2 text-[16px] border bg-white rounded-md`}
+              />
+              {formDataErrors.first_name && <p className="text-red-500 text-sm mt-1">{formDataErrors.first_name}</p>}
+            </div>
+            <div className="py-[10px]">
+              <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
+                Soyad <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                maxLength={20}
+                name="last_name"
+                value={formData.last_name}
+                onChange={handleChange}
+                onBlur={handleBlurValidation}
+                onKeyDown={(e) => {
+                  const isControlKey = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"].includes(e.key)
+                  const isLetter = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİIА-Яа-яЁё]$/.test(e.key)
+                  if (!isLetter && !isControlKey) e.preventDefault()
+                }}
+                placeholder="Soyadınızı daxil edin"
+                className={`w-full mt-1 p-2 text-[16px] bg-white rounded-md outline-gray-200 ${
+                  formDataErrors.last_name ? "border-red-600" : "border-gray-300"
+                } border`}
+              />
+              {formDataErrors.last_name && <p className="text-red-500 text-sm mt-1">{formDataErrors.last_name}</p>}
+            </div>
+            <div className="py-[10px]">
+              <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
+                Doğum tarixi <span className="text-red-500">*</span>
+              </label>
+              <DatePicker
+                selected={formData.birth_date}
+                onChange={(date) => {
+                  setFormData((prev) => ({ ...prev, birth_date: date }))
+                  setFormDataErrors((prev) => ({
+                    ...prev,
+                    birth_date: getErrorMessage("birth_date", date),
+                  }))
+                }}
+                onBlur={handleBlurValidation}
+                dateFormat="yyyy/MM/dd"
+                placeholderText="İl / ay / gün"
+                locale={az}
+                maxDate={subYears(new Date(), 15)}
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
+                calendarStartDay={1}
+                className={`${
+                  formDataErrors.birth_date ? "border-red-600" : "border-gray-300"
+                } outline-gray-200 w-full mt-1 p-2 text-[16px] border bg-white rounded-md text-gray-700`}
+              />
+              {formDataErrors.birth_date && <p className="text-red-500 text-sm mt-1">{formDataErrors.birth_date}</p>}
+            </div>
+            <div className="py-[10px]">
+              <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
+                Mobil nömrə <span className="text-red-500">*</span>
+              </label>
+              <div className="mt-1">
+                <div className="flex">
+                  <span className="bg-gray-100 px-4 py-2 border border-gray-300 border-r-0 rounded-l-md">+994</span>
                   <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    maxLength={15}
-                    value={formData.password}
-                    onChange={handleChange}
-                    onBlur={handleBlurValidation}
-                    placeholder="Şifrənizi daxil edin"
-                    className={`${
-                      formDataErrors.password ? "border-red-600" : "border-gray-300"
-                    } outline-gray-200 w-full mt-1 p-2 text-[16px] border bg-white rounded-md pr-12`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-cyan-600"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                <div className="w-full">
-                  <div
-                    ref={parentRef}
-                    className={`block mt-[5px] h-[6px] rounded-2xl ${
-                      color[Object.values(passwordStrength).filter((x) => x === true).length]
-                    }`}
-                  ></div>
-                </div>
-                <p className={`mt-1 text-sm ${formDataErrors.password ? "text-red-500" : "text-gray-500"}`}>
-                  Şifrəniz ən azı 8 simvoldan ibarət olmalı, özündə minimum bir böyük hərf, rəqəm və xüsusi simvol
-                  (məsələn: !, @, #, -, _, +) ehtiva etməlidir.
-                </p>
-              </div>
-              <div className="py-[10px]">
-                <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
-                  Şifrəni təkrar yazın <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword2 ? "text" : "password"}
-                    name="password2"
-                    maxLength={15}
-                    value={formData.password2}
-                    onChange={handleChange}
-                    onBlur={handleBlurValidation}
-                    placeholder="Şifrənizi təkrar daxil edin"
-                    className={`${
-                      formDataErrors.password2 ? "border-red-600" : "border-gray-300"
-                    } outline-gray-200 w-full mt-1 p-2 text-[16px] border bg-white rounded-md pr-12`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword2(!showPassword2)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-cyan-600"
-                  >
-                    {showPassword2 ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                {formDataErrors.password2 && <p className="text-red-500 text-sm mt-1">{formDataErrors.password2}</p>}
-              </div>
-              <div className="py-[10px]">
-                <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
-                  Cins <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-6 mt-1">
-                  <label className="text-cyan-900 leading-[1.5] flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="MALE"
-                      checked={formData.gender === "MALE"}
-                      onChange={handleChange}
-                      className="w-4 h-4"
-                    />
-                    Kişi
-                  </label>
-                  <label className="text-cyan-900 leading-[1.5] flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="FEMALE"
-                      checked={formData.gender === "FEMALE"}
-                      onChange={handleChange}
-                      className="w-4 h-4"
-                    />
-                    Qadın
-                  </label>
-                </div>
-                {formDataErrors.gender && <p className="text-red-500 text-sm mt-1">{formDataErrors.gender}</p>}
-              </div>
-              <button
-                type="submit"
-                className=" flex justify-center items-center text-sm bg-cyan-900 text-white py-2 rounded-md mt-4 w-full"
-                onClick={handleNext}
-              >
-                Növbəti <IoIosArrowForward className="w-[20px] h-[20px] pt-[2px]" />
-              </button>
-              <p className="text-sm mt-6 text-gray-600 flex items-center justify-center gap-[3px]">
-                Hesabınız var?{" "}
-                <a href="/login" className="text-[rgba(49,135,184,1)] hover:underline">
-                  Daxil olun
-                </a>
-              </p>
-            </form>
-          )}
-          {step === 2 && (
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-lg w-[90%] max-w-md ">
-              <div className="flex justify-evenly ">
-                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[rgba(195,200,209,1)]">1</div>
-                <div className="w-[40px] h-[2px] bg-[rgba(26,72,98,1)] flex justify-between items-center mt-3" />
-                <div className="w-8 h-8 flex items-center justify-center rounded-full  bg-[rgba(26,72,98,1)]  text-white ">
-                  2
-                </div>
-                <div className="w-[40px] h-[2px] bg-[rgba(195,200,209,1)] flex mt-3" />
-                <div className="w-8 h-8 flex items-center justify-center rounded-full  bg-[rgba(195,200,209,1)] ">
-                  3
-                </div>
-              </div>
-              <p className="text-center text-cyan-900 pt-4 pb-5">Addım 2/3 </p>
-              <h3 className="text-xl font-bold text-[#1A4852] mb-4 ">Peşə məlumatları</h3>
-              <div className="mb-4">
-                <label className="block text-sm text-cyan-900 font-medium mb-1">
-                  Peşə sahəsi <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="profession_area"
-                  onChange={handleChange}
-                  onBlur={handleBlurValidation}
-                  className={`${
-                    formDataErrors.profession_area ? "border-red-600" : "border-gray-300"
-                  } outline-gray-200 w-full mt-1 p-2 text-[16px] text-cyan-900 border bg-[rgba(195,200,209,1)] rounded-md`}
-                  value={formData.profession_area}
-                >
-                  <option value="">Peşə sahəsini seçin</option>
-                  {catagories.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.display_name}
-                    </option>
-                  ))}
-                </select>
-                {formDataErrors.profession_area && (
-                  <p className="text-red-500 text-sm mt-1">{formDataErrors.profession_area}</p>
-                )}
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm text-cyan-900  font-medium mb-1">
-                  Peşə ixtisası <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="profession_speciality"
-                  value={formData.profession_speciality}
-                  onChange={handleChange}
-                  onBlur={handleBlurValidation}
-                  className={`${
-                    formDataErrors.profession_speciality ? "border-red-600" : "border-gray-300"
-                  } outline-gray-200 w-full mt-1 p-2 text-[16px] text-cyan-900 border bg-[rgba(195,200,209,1)] rounded-md`}
-                >
-                  <option value="">Peşə ixtisasını seçin</option>
-                  {services.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.display_name}
-                    </option>
-                  ))}
-                  {otherServiceId && <option value="other">Digər</option>}
-                </select>
-                {formDataErrors.profession_speciality && (
-                  <p className="text-red-500 text-sm mt-1">{formDataErrors.profession_speciality}</p>
-                )}
-              </div>
-              {formData.profession_speciality === otherServiceId && (
-                <div className="mt-3 mb-4">
-                  <label className="block text-sm text-cyan-900 font-medium mb-1">
-                    İxtisası daxil edin: <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={50}
-                    name="profession_speciality_other"
-                    value={formData.profession_speciality_other || ""}
-                    onChange={handleChange}
-                    onBlur={handleBlurValidation}
-                    onKeyDown={(e) => {
-                      const isControlKey = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"].includes(e.key)
-                      const isLetter = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİI ]$/.test(e.key)
-                      if (!isLetter && !isControlKey) e.preventDefault()
+                    type="tel"
+                    name="mobile_number"
+                    value={formData.mobile_number}
+                    onChange={(e) => {
+                      const onlyNumbers = e.target.value.replace(/\D/g, "").slice(0, 9)
+                      setFormData((prev) => ({
+                        ...prev,
+                        mobile_number: onlyNumbers,
+                      }))
                     }}
-                    placeholder="Daxil edin..."
-                    className={`w-full border p-2 rounded-md text-cyan-900 ${
-                      formDataErrors.profession_speciality_other ? "border-red-600" : "border-gray-200"
-                    } bg-[rgba(195,200,209,1)] px-4 py-2 cursor-pointer focus:outline-none focus:ring focus:ring-blue-300`}
+                    onKeyDown={(e) => {
+                      const allowedKeys = ["Backspace", "ArrowLeft", "ArrowRight", "Tab"]
+                      if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+                        e.preventDefault()
+                      }
+                    }}
+                    onBlur={handleBlurValidation}
+                    placeholder="501234567"
+                    className={`${
+                      formDataErrors.mobile_number ? "border-red-600" : "border-gray-300"
+                    } outline-gray-200 w-full p-2 text-[16px] border bg-white rounded-r-md`}
                   />
-                  {formDataErrors.profession_speciality_other && (
-                    <p className="text-red-500 text-sm mt-1">{formDataErrors.profession_speciality_other}</p>
-                  )}
                 </div>
-              )}
-              <div className="mb-4">
-                <label className="block text-sm text-cyan-900 font-medium mb-1">
-                  İş təcrübəsi(il) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="experience_years"
-                  value={formData.experience_years}
-                  onBlur={handleBlurValidation}
-                  placeholder="Məsələn: 4"
-                  onChange={handleChange}
-                  onInput={(e) => {
-                    if (e.target.value > 90) {
-                      e.target.value = 90
-                    }
-                  }}
-                  max={90}
-                  className={`${
-                    formDataErrors.experience_years ? "border-red-600" : "border-gray-300"
-                  } no-spinner outline-gray-200 w-full text-cyan-900 mt-1 p-2 text-[16px] border bg-gray-200 rounded-md`}
-                />
-                {formDataErrors.experience_years && (
-                  <p className="text-red-500 text-sm mt-1">{formDataErrors.experience_years}</p>
+                {formDataErrors.mobile_number && (
+                  <p className="text-red-500 text-sm mt-1">{formDataErrors.mobile_number}</p>
                 )}
               </div>
+            </div>
+            <div className="py-[10px]">
+              <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
+                Şifrə <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  maxLength={15}
+                  value={formData.password}
+                  onChange={handleChange}
+                  onBlur={handleBlurValidation}
+                  placeholder="Şifrənizi daxil edin"
+                  className={`${
+                    formDataErrors.password ? "border-red-600" : "border-gray-300"
+                  } outline-gray-200 w-full mt-1 p-2 text-[16px] border bg-white rounded-md pr-12`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-cyan-600"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              <div className="w-full">
+                <div
+                  ref={parentRef}
+                  className={`block mt-[5px] h-[6px] rounded-2xl ${
+                    color[Object.values(passwordStrength).filter((x) => x === true).length]
+                  }`}
+                ></div>
+              </div>
+              <p className={`mt-1 text-sm ${formDataErrors.password ? "text-red-500" : "text-gray-500"}`}>
+                Şifrəniz ən azı 8 simvoldan ibarət olmalı, özündə minimum bir böyük hərf, rəqəm və xüsusi simvol
+                (məsələn: !, @, #, -, _, +) ehtiva etməlidir.
+              </p>
+            </div>
+            <div className="py-[10px]">
+              <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
+                Şifrəni təkrar yazın <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword2 ? "text" : "password"}
+                  name="password2"
+                  maxLength={15}
+                  value={formData.password2}
+                  onChange={handleChange}
+                  onBlur={handleBlurValidation}
+                  placeholder="Şifrənizi təkrar daxil edin"
+                  className={`${
+                    formDataErrors.password2 ? "border-red-600" : "border-gray-300"
+                  } outline-gray-200 w-full mt-1 p-2 text-[16px] border bg-white rounded-md pr-12`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword2(!showPassword2)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-cyan-600"
+                >
+                  {showPassword2 ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {formDataErrors.password2 && <p className="text-red-500 text-sm mt-1">{formDataErrors.password2}</p>}
+            </div>
+            <div className="py-[10px]">
+              <label className="text-cyan-900 leading-[1.5] text-sm font-semibold">
+                Cins <span className="text-red-500">*</span>
+              </label>
+              <div className="flex gap-6 mt-1">
+                <label className="text-cyan-900 leading-[1.5] flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="MALE"
+                    checked={formData.gender === "MALE"}
+                    onChange={handleChange}
+                    className="w-4 h-4"
+                  />
+                  Kişi
+                </label>
+                <label className="text-cyan-900 leading-[1.5] flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="FEMALE"
+                    checked={formData.gender === "FEMALE"}
+                    onChange={handleChange}
+                    className="w-4 h-4"
+                  />
+                  Qadın
+                </label>
+              </div>
+              {formDataErrors.gender && <p className="text-red-500 text-sm mt-1">{formDataErrors.gender}</p>}
+            </div>
+            <button
+              type="submit"
+              className=" flex justify-center items-center text-sm bg-cyan-900 text-white py-2 rounded-md mt-4 w-full"
+              onClick={handleNext}
+            >
+              Növbəti <IoIosArrowForward className="w-[20px] h-[20px] pt-[2px]" />
+            </button>
+            <p className="text-sm mt-6 text-gray-600 flex items-center justify-center gap-[3px]">
+              Hesabınız var?{" "}
+              <a href="/login" className="text-[rgba(49,135,184,1)] hover:underline">
+                Daxil olun
+              </a>
+            </p>
+          </form>
+        )}
+
+        {step === 2 && (
+          <div className="relative z-10 bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-lg w-[90%] max-w-md ">
+            <div className="flex justify-evenly ">
+              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[rgba(195,200,209,1)]">1</div>
+              <div className="w-[40px] h-[2px] bg-[rgba(26,72,98,1)] flex justify-between items-center mt-3" />
+              <div className="w-8 h-8 flex items-center justify-center rounded-full  bg-[rgba(26,72,98,1)]  text-white ">
+                2
+              </div>
+              <div className="w-[40px] h-[2px] bg-[rgba(195,200,209,1)] flex mt-3" />
+              <div className="w-8 h-8 flex items-center justify-center rounded-full  bg-[rgba(195,200,209,1)] ">3</div>
+            </div>
+            <p className="text-center text-cyan-900 pt-4 pb-5">Addım 2/3 </p>
+            <h3 className="text-xl font-bold text-[#1A4852] mb-4 ">Peşə məlumatları</h3>
+            <div className="mb-4">
+              <label className="block text-sm text-cyan-900 font-medium mb-1">
+                Peşə sahəsi <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="profession_area"
+                onChange={handleChange}
+                onBlur={handleBlurValidation}
+                className={`${
+                  formDataErrors.profession_area ? "border-red-600" : "border-gray-300"
+                } outline-gray-200 w-full mt-1 p-2 text-[16px] text-cyan-900 border bg-[rgba(195,200,209,1)] rounded-md`}
+                value={formData.profession_area}
+              >
+                <option value="">Peşə sahəsini seçin</option>
+                {catagories.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.display_name}
+                  </option>
+                ))}
+              </select>
+              {formDataErrors.profession_area && (
+                <p className="text-red-500 text-sm mt-1">{formDataErrors.profession_area}</p>
+              )}
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm text-cyan-900  font-medium mb-1">
+                Peşə ixtisası <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="profession_speciality"
+                value={formData.profession_speciality}
+                onChange={handleChange}
+                onBlur={handleBlurValidation}
+                className={`${
+                  formDataErrors.profession_speciality ? "border-red-600" : "border-gray-300"
+                } outline-gray-200 w-full mt-1 p-2 text-[16px] text-cyan-900 border bg-[rgba(195,200,209,1)] rounded-md`}
+              >
+                <option value="">Peşə ixtisasını seçin</option>
+                {services.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.display_name}
+                  </option>
+                ))}
+                {otherServiceId && <option value="other">Digər</option>}
+              </select>
+              {formDataErrors.profession_speciality && (
+                <p className="text-red-500 text-sm mt-1">{formDataErrors.profession_speciality}</p>
+              )}
+            </div>
+            {formData.profession_speciality === otherServiceId && (
               <div className="mt-3 mb-4">
                 <label className="block text-sm text-cyan-900 font-medium mb-1">
-                  Fəaliyyət göstərdiyi ərazi : <span className="text-red-500">*</span>
+                  İxtisası daxil edin: <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  readOnly
-                  onClick={openPopup}
-                  placeholder={
-                    citiesForShow.cities.length > 0 || citiesForShow.districts.length > 0
-                      ? [
-                          ...citiesForShow.cities.map((item) => item.display_name),
-                          ...citiesForShow.districts.map((item) => item.display_name),
-                        ].join(", ")
-                      : "Ərazi seç"
-                  }
-                  className="w-full border p-2 rounded-md text-cyan-900 border-gray-200 bg-[rgba(195,200,209,1)] px-4 py-2 cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
+                  maxLength={50}
+                  name="profession_speciality_other"
+                  value={formData.profession_speciality_other || ""}
+                  onChange={handleChange}
+                  onBlur={handleBlurValidation}
+                  onKeyDown={(e) => {
+                    const isControlKey = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"].includes(e.key)
+                    const isLetter = /^[a-zA-ZəöüçğışƏÖÜÇĞŞİI ]$/.test(e.key)
+                    if (!isLetter && !isControlKey) e.preventDefault()
+                  }}
+                  placeholder="Daxil edin..."
+                  className={`w-full border p-2 rounded-md text-cyan-900 ${
+                    formDataErrors.profession_speciality_other ? "border-red-600" : "border-gray-200"
+                  } bg-[rgba(195,200,209,1)] px-4 py-2 cursor-pointer focus:outline-none focus:ring focus:ring-blue-300`}
                 />
-                {formDataErrors.cities && <p className="text-red-500 text-sm mt-1">{formDataErrors.cities}</p>}
-              </div>
-              <div className="flex justify-between items-center">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="border border-cyan-900 text-cyan-900 py-2 px-4 rounded-md hover:bg-gray-100 w-[48%] flex justify-center items-center"
-                >
-                  <IoIosArrowBack className="pt-[2px]" /> Geri
-                </button>
-                <button
-                  type="submit"
-                  className=" flex justify-center items-center bg-cyan-900 border-cyan-900 text-white py-2 px-6 rounded-md w-[48%] "
-                  onClick={handleNext}
-                >
-                  Növbəti <IoIosArrowForward className="pt-[2px]" />
-                </button>
-              </div>
-              <p className="text-sm mt-4 text-gray-600 flex items-center justify-center gap-[3px]">
-                Hesabınız var?
-                <a href="/login" className="text-[rgba(49,135,184,1)] hover:underline">
-                  Daxil olun
-                </a>
-              </p>
-            </div>
-          )}
-          {step === 3 && (
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-lg w-[90%] max-w-md">
-              <div className="flex justify-evenly pb-[10px]">
-                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[rgba(195,200,209,1)]">1</div>
-                <div className="w-[40px] h-[2px] bg-[rgba(26,72,98,1)]  flex mt-3" />
-                <div className="w-8 h-8 flex items-center justify-center rounded-full  bg-[rgba(195,200,209,1)]  ">
-                  2
-                </div>
-                <div className="w-[40px] h-[2px] bg-[rgba(26,72,98,1)]    flex mt-3" />
-                <div className="w-8 h-8 flex items-center justify-center rounded-full  bg-[rgba(26,72,98,1)]  text-white ">
-                  3
-                </div>
-              </div>
-              <p className="text-center  text-cyan-900 pb-3 pt-4">Addım 3/3 </p>
-              <h2 className="text-xl font-bold text-[#1A4852] mb-1 py-2">Əlavə məlumatlar</h2>
-              <div className="mb-4">
-                <label className="block text-sm text-cyan-900 font-medium mb-1 py-2">
-                  Təhsil <span className="text-red-500">*</span>
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
-                  {educationOptions.map((option) => (
-                    <label key={option.id} className="flex items-center gap-2 text-sm text-cyan-900">
-                      <input
-                        type="radio"
-                        name="education"
-                        value={option.id}
-                        className="accent-cyan-700 w-6 h-4 text-cyan-900 border-gray-300"
-                        checked={formData.education === option.id}
-                        onChange={(e) => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            education: Number.parseInt(e.target.value),
-                          }))
-                          setFormDataErrors((prev) => ({
-                            ...prev,
-                            education: getErrorMessage("education", Number.parseInt(e.target.value)),
-                          }))
-                        }}
-                        onBlur={handleBlurValidation}
-                      />
-                      {option.label}
-                    </label>
-                  ))}
-                </div>
-                {formDataErrors.education && <p className="text-red-500 text-sm mt-1">{formDataErrors.education}</p>}
-              </div>
-              {formData.education !== "" && formData.education !== 6 && (
-                <div className="mb-4">
-                  <label className="block text-sm text-cyan-900 font-medium mb-1">
-                    Təhsil ixtisası <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Təhsil ixtisasını daxil edin"
-                    name="educationField"
-                    className="w-full border border-gray-300 bg-white p-2 rounded-md text-sm text-gray-600 outline-gray-400"
-                    value={formData.educationField}
-                    onChange={handleChange}
-                    onBlur={handleBlurValidation}
-                  />
-                  {formDataErrors.educationField && (
-                    <p className="text-red-500 text-sm mt-1">{formDataErrors.educationField}</p>
-                  )}
-                </div>
-              )}
-              <div className="mb-4">
-                <label className="block text-sm text-cyan-900 font-medium mb-1 py-2">
-                  Dil bilikləri <span className="text-red-500">*</span>
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 ">
-                  {languageOptions.map((lang) => (
-                    <label key={lang.id} className="flex items-center gap-1 text-sm text-cyan-900 ">
-                      <input
-                        type="checkbox"
-                        name="languages"
-                        value={lang.id}
-                        checked={formData.languages.includes(lang.id)}
-                        onChange={handleLanguageChange}
-                        onBlur={handleBlurValidation}
-                        className="accent-cyan-700 w-4 h-4 border-gray-300 "
-                      />
-                      {lang.label}
-                    </label>
-                  ))}
-                </div>
-                {formDataErrors.languages && <p className="text-red-500 text-sm mt-1">{formDataErrors.languages}</p>}
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm text-cyan-900 font-medium mb-1">Profil şəkli</label>
-                <div
-                  className="border-2 border-dashed  bg-white border-gray-300 rounded-md py-6 text-center text-gray-500 hover:bg-gray-50 cursor-pointer transition"
-                  onClick={handleUploadClick}
-                >
-                  <span className="text-sm  flex flex-col items-center justify-center pt-2">
-                    <img src="/gallery.svg" alt="Gallery icon" /> Şəkil yükləmək üçün klikləyin.
-                  </span>
-                  <input type="file" className="hidden" ref={fileInputRef} onChange={handleProfileImageChange} />
-                </div>
-                {formDataErrors.profile_image && (
-                  <p className="text-red-500 text-sm mt-1">{formDataErrors.profile_image}</p>
+                {formDataErrors.profession_speciality_other && (
+                  <p className="text-red-500 text-sm mt-1">{formDataErrors.profession_speciality_other}</p>
                 )}
               </div>
-              {formData.profile_image && (
-                <div className="flex flex-col items-start mt-2">
-                  {" "}
-
-                  <img
-                    src={URL.createObjectURL(formData.profile_image) || "/placeholder.svg"}
-                    alt="Profil şəkli"
-                    className="w-32 h-32 object-cover rounded-full" 
-                  />
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setImageToEdit(formData.profile_image)
-                        setShowEditor(true)
-                      }}
-                      className="text-blue-600 text-sm hover:underline"
-                    >
-                      Şəkli dəyiş
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, profile_image: null }))}
-                      className="text-red-600 text-sm hover:underline"
-                    >
-                      Sil
-                    </button>
-                  </div>
-                </div>
+            )}
+            <div className="mb-4">
+              <label className="block text-sm text-cyan-900 font-medium mb-1">
+                İş təcrübəsi(il) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="experience_years"
+                value={formData.experience_years}
+                onBlur={handleBlurValidation}
+                placeholder="Məsələn: 4"
+                onChange={handleChange}
+                onInput={(e) => {
+                  if (e.target.value > 90) {
+                    e.target.value = 90
+                  }
+                }}
+                max={90}
+                className={`${
+                  formDataErrors.experience_years ? "border-red-600" : "border-gray-300"
+                } no-spinner outline-gray-200 w-full text-cyan-900 mt-1 p-2 text-[16px] border bg-gray-200 rounded-md`}
+              />
+              {formDataErrors.experience_years && (
+                <p className="text-red-500 text-sm mt-1">{formDataErrors.experience_years}</p>
               )}
-              <div className="mb-4">
-                <label className="block  text-cyan-900 text-sm font-semibold mb-1">Sosial şəbəkə linkləri</label>
-                <p className="text-xs text-gray-500 mb-2">
-                  Peşənizlə əlaqədar sosial şəbəkə səhifəsinin (olduqda) linkini əlavə edə bilərsiniz.
-                </p>
-                {[
-                  {
-                    icon: "fa-brands fa-facebook",
-                    name: "Facebook",
-                    placeholder: "Facebook profil linki",
-                    color: "#1877F2",
-                  },
-                  {
-                    icon: "fa-brands fa-instagram",
-                    name: "Instagram",
-                    placeholder: "Instagram profil linki",
-                    color: "#C13584",
-                  },
-                  {
-                    icon: "fa-brands fa-tiktok",
-                    name: "TikTok",
-                    placeholder: "TikTok profil linki",
-                    color: "#000000",
-                  },
-                  {
-                    icon: "fa-brands fa-linkedin",
-                    name: "LinkedIn",
-                    placeholder: "Linkedin profil linki",
-                    color: "#0A66C2",
-                  },
-                ].map((network) => (
-                  <div
-                    key={network.name}
-                    className="flex items-center border border-gray-300 rounded-md mb-2 overflow-hidden bg-white"
-                  >
-                    <div
-                      className="flex items-center justify-center w-12 h-12"
-                      style={{ backgroundColor: `${network.color}20` }}
-                    >
-                      <i className={`${network.icon} text-xl`} style={{ color: network.color }}></i>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder={network.placeholder}
-                      name={network.name}
-                      className="w-full p-3 outline-none cursor-pointer text-cyan-700"
-                      onChange={handleSocialMediaLinksValue}
-                      onClick={(e) => {
-                        const url = e.target.value
-                        if (url.startsWith("http")) {
-                          window.open(url, "_blank")
-                        }
-                      }}
-                    />
-                  </div>
-                ))}
-                <div className="mb-4">
-                  <label className="block  text-cyan-900 text-sm font-medium mb-2">
-                    Gördüyünüz işlər (Nümunə işlərinizin şəkilləri)
-                  </label>
-                  <div
-                    className="border-2 border-dashed bg-white border-gray-300 rounded-md py-6 px-4 text-center text-gray-500 cursor-pointer "
-                    onClick={handleUploadClick2}
-                  >
-                    <span className="text-sm  mb-1 text-gray-400 text-center flex flex-col items-center justify-center">
-                      <img
-                        src="/cloud-upload.png"
-                        className="flex justify-center w-[30px] align-center"
-                        alt="Cloud upload icon"
-                      />{" "}
-                      JPG/PNG faylları yükləyin (maksimum 10 fayl)
-                    </span>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/png, image/jpeg"
-                      className="hidden"
-                      ref={fileInputRef2}
-                      onChange={handlePortfolioChange}
-                    />
-                  </div>
-                  {formData.work_images?.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2 justify-center">
-                      {formData.work_images.map((file, index) => (
-                        <div
-                          key={index}
-                          className="relative"
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, index)}
-                          onDragOver={handleDragOver}
-                          onDrop={(e) => handleDrop(e, index)}
-                        >
-                          <img
-                            src={URL.createObjectURL(file) || "/placeholder.svg"}
-                            alt={`İş şəkli ${index + 1}`}
-                            className="w-24 h-24 object-cover rounded-md"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveWorkImage(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs"
-                            aria-label={`Remove image ${index + 1}`}
-                          >
-                            <XCircle size={16} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="mb-6">
-                <label className="block text-cyan-900 text-sm font-medium mb-1">Haqqınızda</label>
-                <div className="relative">
-                  <textarea
-                    name="about"
-                    onChange={handleChange}
-                    value={formData.about}
-                    placeholder="Əlavə qeydlərinizi daxil edin"
-                    maxLength={1500}
-                    className="w-full border border-gray-300 outline-gray-400 rounded-md p-2 min-h-[100px] resize-none pr-16 text-sm"
-                    onBlur={handleBlurValidation}
-                  />
-                  <span className="absolute bottom-2 right-2 text-xs text-gray-500">{formData.about.length}/1500</span>
-                </div>
-                {formDataErrors.about && <p className="text-red-500 text-sm mt-1">{formDataErrors.about}</p>}
-              </div>
-              <div className="flex justify-between items-center">
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  className="border border-[#1A4852] text-[#1A4852] py-2 px-4 rounded-md hover:bg-gray-100 w-[48%] flex justify-center items-center"
-                >
-                  <IoIosArrowBack />
-                  Geri
-                </button>
-                <button
-                  type="submit"
-                  className="flex items-center justify-center bg-[rgba(26,72,98,1)] text-white text-sm px-6 py-2 rounded-md hover:bg-[#153b45] w-[48%]"
-                  onClick={handleFinalSubmit}
-                >
-                  Qeydiyyatı tamamla
-                  <IoIosArrowForward />
-                </button>
-              </div>
-              <p className="text-sm mt-4 text-gray-600 flex items-center justify-center gap-[3px]">
-                Hesabınız var?{" "}
-                <a href="/login" className="text-[rgba(49,135,184,1)] hover:underline">
-                  Daxil olun
-                </a>
-              </p>
             </div>
-          )}
-        </div>
-      </div>
+            <div className="mt-3 mb-4">
+              <label className="block text-sm text-cyan-900 font-medium mb-1">
+                Fəaliyyət göstərdiyi ərazi : <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                readOnly
+                onClick={openPopup}
+                placeholder={
+                  citiesForShow.cities.length > 0 || citiesForShow.districts.length > 0
+                    ? [
+                        ...citiesForShow.cities.map((item) => item.display_name),
+                        ...citiesForShow.districts.map((item) => item.display_name),
+                      ].join(", ")
+                    : "Ərazi seç"
+                }
+                className="w-full border p-2 rounded-md text-blue-700
+                 border-gray-200 bg-[rgba(195,200,209,1)] px-4 py-2 cursor-pointer focus:outline-none focus:ring focus:ring-blue-300"
+              />
+              {formDataErrors.cities && <p className="text-red-500 text-sm mt-1">{formDataErrors.cities}</p>}
+            </div>
+            <div className="flex justify-between items-center">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="border border-cyan-900 text-cyan-900 py-2 px-4 rounded-md hover:bg-gray-100 w-[48%] flex justify-center items-center"
+              >
+                <IoIosArrowBack className="pt-[2px]" /> Geri
+              </button>
+              <button
+                type="submit"
+                className=" flex justify-center items-center bg-cyan-900 border-cyan-900 text-white py-2 px-6 rounded-md w-[48%] "
+                onClick={handleNext}
+              >
+                Növbəti <IoIosArrowForward className="pt-[2px]" />
+              </button>
+            </div>
+            <p className="text-sm mt-4 text-gray-600 flex items-center justify-center gap-[3px]">
+              Hesabınız var?
+              <a href="/login" className="text-[rgba(49,135,184,1)] hover:underline">
+                Daxil olun
+              </a>
+            </p>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="relative z-10 bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-lg w-[90%] max-w-md">
+            <div className="flex justify-evenly pb-[10px]">
+              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[rgba(195,200,209,1)]">1</div>
+              <div className="w-[40px] h-[2px] bg-[rgba(26,72,98,1)]  flex mt-3" />
+              <div className="w-8 h-8 flex items-center justify-center rounded-full  bg-[rgba(195,200,209,1)]  ">2</div>
+              <div className="w-[40px] h-[2px] bg-[rgba(26,72,98,1)]    flex mt-3" />
+              <div className="w-8 h-8 flex items-center justify-center rounded-full  bg-[rgba(26,72,98,1)]  text-white ">
+                3
+              </div>
+            </div>
+            <p className="text-center  text-cyan-900 pb-3 pt-4">Addım 3/3 </p>
+            <h2 className="text-xl font-bold text-[#1A4852] mb-1 py-2">Əlavə məlumatlar</h2>
+            <div className="mb-4">
+              <label className="block text-sm text-cyan-900 font-medium mb-1 py-2">
+                Təhsil <span className="text-red-500">*</span>
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2">
+                {educationOptions.map((option) => (
+                  <label key={option.id} className="flex items-center gap-2 text-sm text-cyan-900">
+                    <input
+                      type="radio"
+                      name="education"
+                      value={option.id}
+                      className="accent-cyan-700 w-6 h-4 text-cyan-900 border-gray-300"
+                      checked={formData.education === option.id}
+                      onChange={(e) => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          education: Number.parseInt(e.target.value),
+                        }))
+                        setFormDataErrors((prev) => ({
+                          ...prev,
+                          education: getErrorMessage("education", Number.parseInt(e.target.value)),
+                        }))
+                      }}
+                      onBlur={handleBlurValidation}
+                    />
+                    {option.label}
+                  </label>
+                ))}
+              </div>
+              {formDataErrors.education && <p className="text-red-500 text-sm mt-1">{formDataErrors.education}</p>}
+            </div>
+            {formData.education !== "" && formData.education !== 6 && (
+              <div className="mb-4">
+                <label className="block text-sm text-cyan-900 font-medium mb-1">
+                  Təhsil ixtisası <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Təhsil ixtisasını daxil edin"
+                  name="educationField"
+                  className="w-full border border-gray-300 bg-white p-2 rounded-md text-sm text-gray-600 outline-gray-400"
+                  value={formData.educationField}
+                  onChange={handleChange}
+                  onBlur={handleBlurValidation}
+                />
+                {formDataErrors.educationField && (
+                  <p className="text-red-500 text-sm mt-1">{formDataErrors.educationField}</p>
+                )}
+              </div>
+            )}
+            <div className="mb-4">
+              <label className="block text-sm text-cyan-900 font-medium mb-1 py-2">
+                Dil bilikləri <span className="text-red-500">*</span>
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 ">
+                {languageOptions.map((lang) => (
+                  <label key={lang.id} className="flex items-center gap-1 text-sm text-cyan-900 ">
+                    <input
+                      type="checkbox"
+                      name="languages"
+                      value={lang.id}
+                      checked={formData.languages.includes(lang.id)}
+                      onChange={handleLanguageChange}
+                      onBlur={handleBlurValidation}
+                      className="accent-cyan-700 w-4 h-4 border-gray-300 "
+                    />
+                    {lang.label}
+                  </label>
+                ))}
+              </div>
+              {formDataErrors.languages && <p className="text-red-500 text-sm mt-1">{formDataErrors.languages}</p>}
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm text-cyan-900 font-medium mb-1">Profil şəkli</label>
+              <div
+                className="border-2 border-dashed  bg-white border-gray-300 rounded-md py-6 text-center text-gray-500 hover:bg-gray-50 cursor-pointer transition"
+                onClick={handleUploadClick}
+              >
+                <span className="text-sm  flex flex-col items-center justify-center pt-2">
+                  <img src="/gallery.svg" alt="Gallery icon" /> Şəkil yükləmək üçün klikləyin.
+                </span>
+                <input type="file" className="hidden" ref={fileInputRef} onChange={handleProfileImageChange} />
+              </div>
+              {formDataErrors.profile_image && (
+                <p className="text-red-500 text-sm mt-1">{formDataErrors.profile_image}</p>
+              )}
+            </div>
+            {formData.profile_image && (
+              <div className="flex flex-col items-start mt-2">
+                {" "}
+                <img
+                  src={URL.createObjectURL(formData.profile_image) || "/placeholder.svg" || "/placeholder.svg"}
+                  alt="Profil şəkli"
+                  className="w-32 h-32 object-cover rounded-full"
+                />
+                <div className="flex gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageToEdit(formData.profile_image)
+                      setShowEditor(true)
+                    }}
+                    className="text-blue-600 text-sm hover:underline"
+                  >
+                    Şəkli dəyiş
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        profile_image: null,
+                      }))
+                    }
+                    className="text-red-600 text-sm hover:underline"
+                  >
+                    Sil
+                  </button>
+                </div>
+              </div>
+            )}
+            <div className="mb-4">
+              <label className="block  text-cyan-900 text-sm font-semibold mb-1">Sosial şəbəkə linkləri</label>
+              <p className="text-xs text-gray-500 mb-2">
+                Peşənizlə əlaqədar sosial şəbəkə səhifəsinin (olduqda) linkini əlavə edə bilərsiniz.
+              </p>
+              {[
+                {
+                  icon: "fa-brands fa-facebook",
+                  name: "Facebook",
+                  placeholder: "Facebook profil linki",
+                  color: "#1877F2",
+                },
+                {
+                  icon: "fa-brands fa-instagram",
+                  name: "Instagram",
+                  placeholder: "Instagram profil linki",
+                  color: "#C13584",
+                },
+                {
+                  icon: "fa-brands fa-tiktok",
+                  name: "TikTok",
+                  placeholder: "TikTok profil linki",
+                  color: "#000000",
+                },
+                {
+                  icon: "fa-brands fa-linkedin",
+                  name: "LinkedIn",
+                  placeholder: "Linkedin profil linki",
+                  color: "#0A66C2",
+                },
+              ].map((network) => (
+                <div
+                  key={network.name}
+                  className="flex items-center border border-gray-300 rounded-md mb-2 overflow-hidden bg-white"
+                >
+                  <div
+                    className="flex items-center justify-center w-12 h-12"
+                    style={{ backgroundColor: `${network.color}20` }}
+                  >
+                    <i className={`${network.icon} text-xl`} style={{ color: network.color }}></i>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder={network.placeholder}
+                    name={network.name}
+                    className="w-full p-3 outline-none cursor-pointer text-cyan-700"
+                    onChange={handleSocialMediaLinksValue}
+                    onClick={(e) => {
+                      const url = e.target.value
+                      if (url.startsWith("http")) {
+                        window.open(url, "_blank")
+                      }
+                    }}
+                  />
+                </div>
+              ))}
+              <div className="mb-4">
+                <label className="block  text-cyan-900 text-sm font-medium mb-2">
+                  Gördüyünüz işlər (Nümunə işlərinizin şəkilləri)
+                </label>
+                <div
+                  className="border-2 border-dashed bg-white border-gray-300 rounded-md py-6 px-4 text-center text-gray-500 cursor-pointer "
+                  onClick={handleUploadClick2}
+                >
+                  <span className="text-sm  mb-1 text-gray-400 text-center flex flex-col items-center justify-center">
+                    <img
+                      src="/cloud-upload.png"
+                      className="flex justify-center w-[30px] align-center"
+                      alt="Cloud upload icon"
+                    />{" "}
+                    JPG/PNG faylları yükləyin (maksimum 10 fayl)
+                  </span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/png, image/jpeg"
+                    className="hidden"
+                    ref={fileInputRef2}
+                    onChange={handlePortfolioChange}
+                  />
+                </div>
+                {formData.work_images?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2 justify-center">
+                    {formData.work_images.map((file, index) => (
+                      <div
+                        key={index}
+                        className="relative"
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
+                      >
+                        <img
+                          src={URL.createObjectURL(file) || "/placeholder.svg"}
+                          alt={`İş şəkli ${index + 1}`}
+                          className="w-24 h-24 object-cover rounded-md"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveWorkImage(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-xs"
+                          aria-label={`Remove image ${index + 1}`}
+                        >
+                          <XCircle size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="mb-6">
+              <label className="block text-cyan-900 text-sm font-medium mb-1">Haqqınızda</label>
+              <div className="relative">
+                <textarea
+                  name="about"
+                  onChange={handleChange}
+                  value={formData.about}
+                  placeholder="Əlavə qeydlərinizi daxil edin"
+                  maxLength={1500}
+                  className="w-full border border-gray-300 outline-gray-400 rounded-md p-2 min-h-[100px] resize-none pr-16 text-sm"
+                  onBlur={handleBlurValidation}
+                />
+                <span className="absolute bottom-2 right-2 text-xs text-gray-500">{formData.about.length}/1500</span>
+              </div>
+              {formDataErrors.about && <p className="text-red-500 text-sm mt-1">{formDataErrors.about}</p>}
+            </div>
+            <div className="flex justify-between items-center">
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="border border-[#1A4852] text-[#1A4852] py-2 px-4 rounded-md hover:bg-gray-100 w-[48%] flex justify-center items-center"
+              >
+                <IoIosArrowBack />
+                Geri
+              </button>
+              <button
+                type="submit"
+                className="flex items-center justify-center bg-[rgba(26,72,98,1)] text-white text-sm px-6 py-2 rounded-md hover:bg-[#153b45] w-[48%]"
+                onClick={handleFinalSubmit}
+              >
+                Qeydiyyatı tamamla
+                <IoIosArrowForward />
+              </button>
+            </div>
+            <p className="text-sm mt-4 text-gray-600 flex items-center justify-center gap-[3px]">
+              Hesabınız var?{" "}
+              <a href="/login" className="text-[rgba(49,135,184,1)] hover:underline">
+                Daxil olun
+              </a>
+            </p>
+          </div>
+        )}
+      </main>
+
       {showPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/50">
           <div className="w-[65%] h-[90%] rounded-2xl bg-image overflow-hidden shadow-lg">
@@ -1349,9 +1358,12 @@ function Register() {
           </div>
         </div>
       )}
+
       {showEditor && (
         <ImageEditor image={imageToEdit} onSave={handleImageEditorSave} onCancel={handleImageEditorCancel} />
       )}
+
+      <Footer />
     </div>
   )
 }
