@@ -4,7 +4,7 @@ import { CheckCircle, User, Star, ArrowUpDown, Search } from "lucide-react";
 
 import Footer from "../components/Footer";
 import Header from "../home/Components/Header";
-import NewEcomSideBar from "../components/NewEcomSidebar";
+import NewEcomSideBar from "../components/NewEcomSideBar"
 
 export default function Ecom() {
   const [professionals, setProfessionals] = useState([]);
