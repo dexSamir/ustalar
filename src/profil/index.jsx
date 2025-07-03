@@ -161,21 +161,22 @@ export default function ProfilePage() {
   );
 
   const Gallery = ({ profileData }) => {
-    const [images, setImages] = useState(profileData?.work_images || []);
+    const [selectedImageUrl, setSelectedImageUrl] = useState("");
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    useEffect(() => {
-      setImages(profileData?.work_images || []);
-    }, [profileData]);
-
-    const handleDragEnd = (result) => {
-      if (!result.destination) return;
-
-      const reordered = Array.from(images);
-      const [moved] = reordered.splice(result.source.index, 1);
-      reordered.splice(result.destination.index, 0, moved);
-
-      setImages(reordered);
+    const handleImageClick = (url) => {
+      setSelectedImageUrl(url);
+      document.body.style.overflow = "hidden";
+      setIsModalOpen(true);
     };
+
+    const handleCloseModal = () => {
+      setIsModalOpen(false);
+      document.body.style.overflow = "auto";
+    };
+
+    const images = profileData?.work_images || [];
+    const cleanedSrc = selectedImageUrl.replace(/^İş Şəkli\s*/, "");
 
     return (
       <div className="m-6">
@@ -183,37 +184,45 @@ export default function ProfilePage() {
           Gördüyünüz işlər
         </h3>
 
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="images" direction="horizontal">
-            {(provided) => (
-              <div
-                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 ml-3 gap-6"
-                {...provided.droppableProps}
-                ref={provided.innerRef}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 ml-3 gap-6">
+          {images.map((src, index) => (
+            <div
+              key={index}
+              className="w-full aspect-square overflow-hidden rounded-2xl cursor-pointer transition hover:scale-105"
+              onClick={() => handleImageClick(src)}
+            >
+              <img
+                src={src.replace("İş Şəkli ", "")}
+                alt={`İş ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ))}
+        </div>
+
+        {isModalOpen && (
+          <div
+            onClick={handleCloseModal}
+            className="fixed inset-0 z-50 flex justify-center items-center bg-black/40 backdrop-blur-sm"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="relative bg-white rounded-xl p-4 shadow-lg max-w-[90%] max-h-[90%]"
+            >
+              <button
+                className="absolute top-2 right-2 text-gray-600 hover:text-red-500 text-2xl font-bold"
+                onClick={handleCloseModal}
               >
-                {images.map((src, index) => (
-                  <Draggable key={src} draggableId={src} index={index}>
-                    {(provided) => (
-                      <div
-                        className="w-full aspect-square overflow-hidden rounded-2xl cursor-move"
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                      >
-                        <img
-                          src={src.replace("İş Şəkli ", "")}
-                          alt={`İş ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+                &times;
+              </button>
+              <img
+                src={cleanedSrc}
+                alt="Böyük şəkil"
+                className="w-full h-[80vh] rounded-xl"
+              />
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -389,24 +398,45 @@ export const InfoCards = ({ profileData, isUseFor }) => {
               <span className="text-gray-500">Fəaliyyət göstərdiyi ərazi:</span>
               {profileData?.cities?.length > 2 && (
                 <span className="font-semibold text-cyan-900 text-[16px]">
-                  {profileData?.cities?.slice(0, 2).join(", ")}
+                  {profileData?.cities?.slice(0, 2).map((city, index) => (
+                    <span key={index}>
+                      {city}
+                      {index < profileData?.cities?.slice(0, 2).length - 1
+                        ? ", "
+                        : ""}
+                    </span>
+                  ))}
                   {!isMoreLocation ? (
                     <span
                       className="text-cyan-400 cursor-pointer"
                       onClick={() => setIsMoreLocation(true)}
                     >
+                      {" "}
                       daha çox...
                     </span>
                   ) : (
-                    profileData?.cities
-                      ?.slice(2, profileData.cities.length)
-                      .join(", ")
+                    <>
+                      {", "}
+                      {profileData?.cities?.slice(2).map((city, index) => (
+                        <span key={index}>
+                          {city}
+                          {index < profileData?.cities?.slice(2).length - 1
+                            ? ", "
+                            : ""}
+                        </span>
+                      ))}
+                    </>
                   )}
                 </span>
               )}
               {profileData?.cities?.length <= 2 && (
                 <span className="font-semibold text-cyan-900 text-[16px]">
-                  {profileData?.cities?.slice(0, 2).join(", ")}
+                  {profileData?.cities?.map((city, index) => (
+                    <span key={index}>
+                      {city}
+                      {index < profileData?.cities?.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
                 </span>
               )}
             </span>

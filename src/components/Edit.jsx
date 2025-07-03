@@ -183,29 +183,58 @@ export default function Edit() {
         setMobileNumber(data.mobile_number || "");
         setPassword(data.password || "");
         setGender(data.gender || "");
+
         setProfessionArea(data.profession_area?.id || "");
-        setProfessionSpecialization(
-          data.profession_speciality?.id || data.profession_speciality_other
-            ? "other"
-            : ""
-        );
-        setOtherSpecializationInput(data.profession_speciality_other || "");
+
+        const specialization = data.profession_speciality;
+        if (typeof specialization === "object") {
+          setProfessionSpecialization(specialization.id || "");
+        } else if (data.profession_speciality_other) {
+          setProfessionSpecialization("other");
+          setOtherSpecializationInput(data.profession_speciality_other);
+        } else {
+          setProfessionSpecialization(specialization || "");
+        }
         setWorkExperience(data.experience_years || "");
         setEducationLevel(data.education || "");
         setEducationSpecialization(data.education_speciality || "");
         setNote(data.note || "");
-        setLanguages(data.languages?.map((lang) => lang.id) || []);
+
+        setLanguages(
+          data.languages
+            ?.map((lang) => {
+              if (typeof lang === "object") {
+                return lang.id;
+              }
+              const langObj = language.find((l) => l.display_name === lang);
+              return langObj ? langObj.id : null;
+            })
+            .filter(Boolean) || []
+        );
+
         setProfileImageSrc(
           data.profile_image || "/placeholder.svg?height=120&width=120"
         );
 
         if (data.cities || data.districts) {
+          const selectedCities = Array.isArray(data.cities)
+            ? data.cities
+            : [data.cities].filter(Boolean);
+          const selectedDistricts = Array.isArray(data.districts)
+            ? data.districts
+            : [data.districts].filter(Boolean);
+
           setCitiesForShow({
-            cities: data.cities || [],
-            districts: data.districts || [],
+            cities: selectedCities.map((city) => ({
+              id: city.id,
+              display_name: city.display_name,
+            })),
+            districts: selectedDistricts.map((district) => ({
+              id: district.id,
+              display_name: district.display_name,
+            })),
           });
         }
-
         setSocialLinks({
           facebook: data.facebook || "",
           instagram: data.instagram || "",

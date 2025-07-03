@@ -135,7 +135,7 @@ export default function EditPassword() {
       }
 
       const passwordRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{7,15}$/;
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,15}$/;
 
       if (!passwordRegex.test(newPassword)) {
         setErrorMessage(
@@ -337,7 +337,7 @@ export default function EditPassword() {
                 Mobil nömrə <span className="text-red-500 text-lg">*</span>
               </label>
               <div className="flex border border-[#C3C8D1] rounded-lg overflow-hidden h-[3.2rem]">
-                <span className="bg-gray-100 p-3 flex items-center text-[#1A4862] font-semibold">
+                <span className=" p-3 flex items-center text-[#1A4862] font-semibold border rounded-l-lg">
                   +994
                 </span>
                 <input

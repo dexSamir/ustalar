@@ -297,7 +297,12 @@ function Login() {
                   Mobil nömrə <span className="text-red-500">*</span>
                 </label>
                 <div className="flex">
-                  <span className="bg-gray-100 px-3 py-2 border border-r-0 rounded-l-lg text-gray-700 text-sm">
+                  <span
+                    className={`px-3 py-2 border border-r-0 rounded-l-lg text-sm text-gray-700 
+        ${
+          errors.mobile_number ? "border-red-500 bg-red-50" : "border-gray-300"
+        }`}
+                  >
                     +994
                   </span>
                   <input
@@ -307,13 +312,13 @@ function Login() {
                     onChange={handleChange}
                     placeholder="50 123 45 67"
                     maxLength="12"
-                    className={`w-full px-3 py-2 border rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#1A4862] ${
-                      errors.mobile_number
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-r-lg focus:outline-none focus:ring-2 focus:ring-[#1A4862]
+        ${
+          errors.mobile_number ? "border-red-500 bg-red-50" : "border-gray-300"
+        }`}
                   />
                 </div>
+
                 {errors.mobile_number && (
                   <p className="text-red-500 text-xs mt-1">
                     {errors.mobile_number}

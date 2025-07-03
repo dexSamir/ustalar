@@ -16,7 +16,6 @@ export default function CitySelectionPopup({
     initialCities.districts || []
   );
   const [activeTab, setActiveTab] = useState("cities");
-  const [filteredDistricts, setFilteredDistricts] = useState([]);
 
   const fetchCitiesAndDistricts = useCallback(async () => {
     try {
@@ -26,18 +25,7 @@ export default function CitySelectionPopup({
       ]);
 
       setCities(citiesRes.data.results || citiesRes.data);
-      const allDistricts = districtsRes.data.results || districtsRes.data;
-      setDistricts(allDistricts);
-
-      if (initialCities.cities?.length > 0) {
-        const cityIds = initialCities.cities.map((c) => c.id);
-        const filtered = allDistricts.filter((d) =>
-          cityIds.includes(d.city?.id || d.city)
-        );
-        setFilteredDistricts(filtered);
-      } else {
-        setFilteredDistricts(allDistricts);
-      }
+      setDistricts(districtsRes.data.results || districtsRes.data);
     } catch (error) {
       console.error("Error fetching cities or districts:", error);
     }
@@ -53,20 +41,6 @@ export default function CitySelectionPopup({
       : [...selectedCities, city];
 
     setSelectedCities(newSelectedCities);
-
-    if (newSelectedCities.length > 0) {
-      const cityIds = newSelectedCities.map((c) => c.id);
-      const filtered = districts.filter((d) =>
-        cityIds.includes(d.city?.id || d.city)
-      );
-      setFilteredDistricts(filtered);
-
-      setSelectedDistricts((prev) =>
-        prev.filter((d) => filtered.some((fd) => fd.id === d.id))
-      );
-    } else {
-      setFilteredDistricts(districts);
-    }
   };
 
   const handleSelectDistrict = (district) => {
@@ -90,14 +64,22 @@ export default function CitySelectionPopup({
       .includes(searchTerm.toLowerCase())
   );
 
+  const bakuCity = cities.find((city) => city.id === 1);
+
+  const bakuDistricts = districts.filter(
+    (d) => d.city?.id === 1 || d.city === 1
+  );
+
   const displayedDistricts =
-    activeTab === "districts"
-      ? filteredDistricts.filter((district) =>
+    activeTab === "baku"
+      ? bakuDistricts.filter((district) =>
           (district.display_name || district.name)
             .toLowerCase()
             .includes(searchTerm.toLowerCase())
         )
       : [];
+
+  const allSelectedAreas = [...selectedCities, ...selectedDistricts];
 
   return (
     <div className="bg-white rounded-lg shadow-lg flex flex-col h-full">
@@ -142,29 +124,25 @@ export default function CitySelectionPopup({
             }`}
             onClick={() => setActiveTab("cities")}
           >
-            Şəhərlər
+            Şəhərlər və rayonlar
           </button>
           <button
             className={`flex-1 py-2 text-center font-medium ${
-              activeTab === "districts"
+              activeTab === "baku"
                 ? "text-[#1A4862] border-b-2 border-[#1A4862]"
                 : "text-gray-500 hover:text-gray-700"
             }`}
-            onClick={() => {
-              if (selectedCities.length === 0) {
-                alert("Əvvəlcə şəhər seçməlisiniz");
-                return;
-              }
-              setActiveTab("districts");
-            }}
+            onClick={() => setActiveTab("baku")}
           >
-            Rayonlar
+            Bakı
           </button>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-64 overflow-y-auto pr-2">
-          {activeTab === "cities"
-            ? filteredCities.map((city,) => (
+          {activeTab === "cities" &&
+            filteredCities
+              .filter((city) => city.id !== 1)
+              .map((city) => (
                 <label
                   key={`city-${city.id}`}
                   className="flex items-center text-gray-700 cursor-pointer"
@@ -177,8 +155,23 @@ export default function CitySelectionPopup({
                   />
                   <span className="ml-2">{city.display_name || city.name}</span>
                 </label>
-              ))
-            : displayedDistricts.map((district) => (
+              ))}
+
+          {activeTab === "baku" && bakuCity && (
+            <>
+              <label className="flex items-center text-gray-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="form-checkbox h-5 w-5 text-[#1A4862] rounded"
+                  checked={selectedCities.some((s) => s.id === bakuCity.id)}
+                  onChange={() => handleSelectCity(bakuCity)}
+                />
+                <span className="ml-2 font-semibold">
+                  {bakuCity.display_name || bakuCity.name}
+                </span>
+              </label>
+
+              {displayedDistricts.map((district) => (
                 <label
                   key={`district-${district.id}`}
                   className="flex items-center text-gray-700 cursor-pointer"
@@ -191,46 +184,31 @@ export default function CitySelectionPopup({
                     )}
                     onChange={() => handleSelectDistrict(district)}
                   />
-                  <span
-                    className="ml-2"
-                    key={`selected-district-${district.id}`}
-                  >
+                  <span className="ml-2">
                     {district.display_name || district.name}
                   </span>
                 </label>
               ))}
+            </>
+          )}
         </div>
 
-        {selectedCities.length > 0 && (
+        {allSelectedAreas.length > 0 && (
           <div className="mt-4">
             <h3 className="font-medium text-[#1A4862] mb-2">
-              Seçilmiş şəhərlər:
+              Seçilmiş ərazilər:
             </h3>
             <div className="flex flex-wrap gap-2">
-              {selectedCities.map((city) => (
+              {allSelectedAreas.map((area) => (
                 <span
-                  key={`selected-city-${city.id}`}
-                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm"
+                  key={`selected-${area.id}`}
+                  className={`px-2 py-1 rounded text-sm ${
+                    selectedCities.some((c) => c.id === area.id)
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-green-100 text-green-800"
+                  }`}
                 >
-                  {city.display_name || city.name}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {selectedDistricts.length > 0 && (
-          <div className="mt-4">
-            <h3 className="font-medium text-[#1A4862] mb-2">
-              Seçilmiş rayonlar:
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {selectedDistricts.map((district) => (
-                <span
-                  key={district.id}
-                  className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm"
-                >
-                  {district.display_name || district.name}
+                  {area.display_name || area.name}
                 </span>
               ))}
             </div>
