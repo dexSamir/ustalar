@@ -212,25 +212,20 @@ export default function Edit() {
         setFilteredServices(filtered);
       }
 
-      // Handle profession_speciality
       if (data.profession_speciality) {
         let foundServiceId = "";
         let specialityDisplayName = "";
 
         if (data.profession_speciality.id) {
-          // If it's an object with an ID (preferred)
           foundServiceId = data.profession_speciality.id;
           specialityDisplayName = data.profession_speciality.display_name || "";
         } else if (typeof data.profession_speciality === "string") {
-          // If it's a display name string
           specialityDisplayName = data.profession_speciality.trim();
 
-          // Try to find an exact match first (case-sensitive, trimmed)
           let service = fetchedAllServices.find(
             (s) => s.display_name.trim() === specialityDisplayName
           );
 
-          // If not found, try case-insensitive match (trimmed)
           if (!service) {
             const normalizedSpeciality = specialityDisplayName.toLowerCase();
             service = fetchedAllServices.find(
@@ -239,10 +234,8 @@ export default function Edit() {
             );
           }
 
-          // If still not found, try matching against "Service Name (Category Name)" format
           if (!service) {
             service = fetchedAllServices.find((s) => {
-              // Ensure s.category exists before accessing display_name
               if (s.category && s.category.display_name) {
                 const fullDisplayName = `${s.display_name.trim()} (${s.category.display_name.trim()})`;
                 return (
@@ -254,7 +247,6 @@ export default function Edit() {
             });
           }
 
-          // If still not found, try matching just the service name part from "Service Name (Category Name)"
           if (
             !service &&
             specialityDisplayName.includes("(") &&
@@ -276,7 +268,7 @@ export default function Edit() {
         }
 
         setProfessionSpecialization(foundServiceId);
-        setOtherSpecializationInput(""); // "Digər" option and input are removed
+        setOtherSpecializationInput("");
       } else {
         setProfessionSpecialization("");
         setOtherSpecializationInput("");
@@ -305,8 +297,8 @@ export default function Edit() {
       );
 
       if (data.cities || data.districts) {
-        const allAvailableCities = fetchedLocations; // 'location' state holds data from /api/v1/cities/
-        const allAvailableDistricts = [...districts, ...bakuDistricts]; // Combine all districts
+        const allAvailableCities = fetchedLocations;
+        const allAvailableDistricts = [...districts, ...bakuDistricts];
 
         const selectedCities = Array.isArray(data.cities)
           ? data.cities
