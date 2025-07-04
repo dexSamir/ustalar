@@ -1,161 +1,169 @@
-
-import React, { useState, useRef, useEffect } from "react"
-import { ArrowLeft, ArrowRight, RotateCcw, ZoomIn, ZoomOut } from "lucide-react"
+import React, { useState, useRef, useEffect } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  RotateCcw,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
 
 const ImageEditor = ({ image, onSave, onCancel }) => {
-  const [scale, setScale] = useState(1)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [rotation, setRotation] = useState(0)
-  const canvasRef = useRef(null)
-  const containerRef = useRef(null)
-  const [imageUrl, setImageUrl] = useState("")
-  const [imageElement, setImageElement] = useState(null)
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [rotation, setRotation] = useState(0);
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [imageElement, setImageElement] = useState(null);
 
   useEffect(() => {
     if (image) {
-      const url = URL.createObjectURL(image)
-      setImageUrl(url)
-      return () => URL.revokeObjectURL(url)
+      const url = URL.createObjectURL(image);
+      setImageUrl(url);
+      return () => URL.revokeObjectURL(url);
     }
-  }, [image])
+  }, [image]);
 
   useEffect(() => {
     if (imageUrl) {
-      const img = new Image()
-      img.crossOrigin = "anonymous"
+      const img = new Image();
+      img.crossOrigin = "anonymous";
       img.onload = () => {
-        setImageElement(img)
-        const canvas = canvasRef.current
+        setImageElement(img);
+        const canvas = canvasRef.current;
         if (canvas) {
-          const containerSize = 300
-          const imgAspect = img.width / img.height
-          let initialScale = 1
+          const containerSize = 300;
+          const imgAspect = img.width / img.height;
+          let initialScale = 1;
           if (imgAspect > 1) {
-            initialScale = containerSize / img.width
+            initialScale = containerSize / img.width;
           } else {
-            initialScale = containerSize / img.height
+            initialScale = containerSize / img.height;
           }
-          setScale(initialScale * 1.2)
-          setPosition({ x: 0, y: 0 })
+          setScale(initialScale * 1.2);
+          setPosition({ x: 0, y: 0 });
         }
-      }
-      img.src = imageUrl
+      };
+      img.src = imageUrl;
     }
-  }, [imageUrl])
+  }, [imageUrl]);
 
   const drawImage = () => {
-    const canvas = canvasRef.current
-    const ctx = canvas?.getContext("2d")
-    if (!canvas || !ctx || !imageElement) return
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx || !imageElement) return;
 
-    const size = 300
-    canvas.width = size
-    canvas.height = size
+    const size = 300;
+    canvas.width = size;
+    canvas.height = size;
 
-    ctx.clearRect(0, 0, size, size)
+    ctx.clearRect(0, 0, size, size);
 
-    ctx.save()
-    ctx.beginPath()
-    ctx.arc(size / 2, size / 2, size / 2, 0, 2 * Math.PI)
-    ctx.clip()
+    ctx.beginPath();
+    ctx.rect(0, 0, size, size);
+    ctx.clip();
 
-    const scaledWidth = imageElement.width * scale
-    const scaledHeight = imageElement.height * scale
+    const scaledWidth = imageElement.width * scale;
+    const scaledHeight = imageElement.height * scale;
 
-    const centerX = size / 2
-    const centerY = size / 2
+    const centerX = size / 2;
+    const centerY = size / 2;
 
-    const drawX = centerX - scaledWidth / 2 + position.x
-    const drawY = centerY - scaledHeight / 2 + position.y
+    const drawX = centerX - scaledWidth / 2 + position.x;
+    const drawY = centerY - scaledHeight / 2 + position.y;
 
     if (rotation !== 0) {
-      ctx.translate(centerX, centerY)
-      ctx.rotate((rotation * Math.PI) / 180)
-      ctx.translate(-centerX, -centerY)
+      ctx.translate(centerX, centerY);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.translate(-centerX, -centerY);
     }
 
-    ctx.drawImage(imageElement, drawX, drawY, scaledWidth, scaledHeight)
-    ctx.restore()
+    ctx.drawImage(imageElement, drawX, drawY, scaledWidth, scaledHeight);
 
-    ctx.beginPath()
-    ctx.arc(size / 2, size / 2, size / 2 - 2, 0, 2 * Math.PI)
-    ctx.strokeStyle = "#e5e7eb"
-    ctx.lineWidth = 4
-    ctx.stroke()
-  }
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, size, size);
+  };
 
   useEffect(() => {
-    drawImage()
-  }, [imageElement, scale, position, rotation])
+    drawImage();
+  }, [imageElement, scale, position, rotation]);
 
   const handleMouseDown = (e) => {
-    setIsDragging(true)
+    setIsDragging(true);
     setDragStart({
       x: e.clientX - position.x,
       y: e.clientY - position.y,
-    })
-  }
+    });
+  };
 
   const handleMouseMove = (e) => {
-    if (!isDragging) return
+    if (!isDragging) return;
     setPosition({
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y,
-    })
-  }
+    });
+  };
 
   const handleMouseUp = () => {
-    setIsDragging(false)
-  }
+    setIsDragging(false);
+  };
 
   const handleZoomIn = () => {
-    setScale((prev) => Math.min(prev * 1.1, 3))
-  }
+    setScale((prev) => Math.min(prev * 1.1, 3));
+  };
 
   const handleZoomOut = () => {
-    setScale((prev) => Math.max(prev * 0.9, 0.5))
-  }
+    setScale((prev) => Math.max(prev * 0.9, 0.5));
+  };
 
   const handleRotate = () => {
-    setRotation((prev) => (prev + 90) % 360)
-  }
+    setRotation((prev) => (prev + 90) % 360);
+  };
 
   const handleReset = () => {
-    setScale(1)
-    setPosition({ x: 0, y: 0 })
-    setRotation(0)
-  }
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+    setRotation(0);
+  };
 
   const handleSave = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    canvas.toBlob(
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext("2d");
+
+    tempCtx.drawImage(canvas, 0, 0);
+
+    tempCanvas.toBlob(
       (blob) => {
         if (blob && image) {
-          const editedFile = new File([blob], image.name, { type: image.type })
-          onSave(editedFile)
+          const editedFile = new File([blob], image.name, { type: image.type });
+          onSave(editedFile);
         }
       },
       image?.type || "image/jpeg",
-      0.9,
-    )
-  }
+      0.9
+    );
+  };
 
-  if (!image) return null
+  if (!image) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
-        {" "}
-        <h3 className="text-lg font-semibold text-[#1A4862] mb-6">Şəkli dairəyə yerləşdirin</h3>{" "}
-        <div className="relative mb-6" ref={containerRef}>
-          {" "}
+        <h3 className="text-lg font-semibold text-[#1A4862] mb-6">
+          Şəkli kvadrat içərisində yerləşdirin
+        </h3>
+        <div className="relative mb-6">
           <canvas
             ref={canvasRef}
-            className="w-64 h-64 mx-auto rounded-full cursor-move select-none"
+            className="w-64 h-64 mx-auto border-2 border-dashed border-gray-300 cursor-move select-none"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -206,11 +214,13 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
             Sıfırla
           </button>
         </div>
-        <p className="text-sm text-gray-600 mb-6">Şəkli sürüşdürərək yerini dəyişin və böyüklüyünü tənzimləyin</p>{" "}
+        <p className="text-sm text-gray-600 mb-6">
+          Şəkli sürüşdürərək yerini dəyişin və böyüklüyünü tənzimləyin
+        </p>{" "}
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="w-2/5 border border-[#1A4862] text-[#1A4862] py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2" 
+            className="w-2/5 border border-[#1A4862] text-[#1A4862] py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
             Geri
@@ -218,7 +228,6 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
           <button
             onClick={handleSave}
             className="w-3/5 bg-[#1A4862] text-white py-3 rounded-lg font-medium hover:bg-[#1A4862]/90 transition-colors flex items-center justify-center gap-2"
-            
           >
             Təsdiqlə
             <ArrowRight className="w-4 h-4" />
@@ -244,7 +253,7 @@ const ImageEditor = ({ image, onSave, onCancel }) => {
         }
       `}</style>
     </div>
-  )
-}
+  );
+};
 
-export default ImageEditor
+export default ImageEditor;

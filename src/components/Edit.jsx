@@ -59,6 +59,7 @@ export default function Edit() {
   const [note, setNote] = useState("");
   const [previewImage, setPreviewImage] = useState(null);
   const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
   const [bakuDistricts, setBakuDistricts] = useState([]);
   const [isBakuOpen, setIsBakuOpen] = useState(false);
   const [filteredBakuDistricts, setFilteredBakuDistricts] = useState([]);
@@ -99,6 +100,10 @@ export default function Edit() {
     useState("");
   const [languages, setLanguages] = useState([]);
   const [languageSkillsError, setLanguageSkillsError] = useState("");
+  const [citiesForShow, setCitiesForShow] = useState({
+    cities: [],
+    districts: [],
+  });
 
   const registrationDate = new Date("2025-08-11");
   const formattedRegistrationDate = format(registrationDate, "dd MMMM");
@@ -128,128 +133,228 @@ export default function Edit() {
     Kişi: "MALE",
   };
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      let token = localStorage.getItem("authToken");
+  const fetchUserData = async (
+    fetchedCategories,
+    fetchedAllServices,
+    fetchedLanguages,
+    fetchedLocations
+  ) => {
+    let token = localStorage.getItem("authToken");
 
-      if (!token) {
-        await loginUser();
-        token = localStorage.getItem("authToken");
+    if (!token) {
+      await loginUser();
+      token = localStorage.getItem("authToken");
+    }
+
+    if (!token) {
+      console.error("Token yoxdur. Profil məlumatları alına bilməz.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        "https://api.peshekar.online/api/v1/profile/",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Profil məlumatları:", response.data);
+
+      const data = response.data;
+
+      let firstName = "";
+      let lastName = "";
+      if (data.full_name) {
+        const nameParts = data.full_name.split(" ");
+        firstName = nameParts[0] || "";
+        lastName = nameParts.slice(1).join(" ") || "";
       }
 
-      if (!token) {
-        console.error("Token yoxdur. Profil məlumatları alına bilməz.");
-        setLoading(false);
-        return;
+      setUserData(data);
+
+      const formattedWorkImages =
+        data.work_images?.map((item) => {
+          const url = item.replace("İş Şəkli ", "");
+          return {
+            url: url,
+            name: url.split("/").pop(),
+          };
+        }) || [];
+
+      setUploadedImages(formattedWorkImages);
+
+      setFirstName(firstName);
+      setLastName(lastName);
+      setBirthDate(data.birth_date ? new Date(data.birth_date) : null);
+      setMobileNumber(data.mobile_number || "");
+      setPassword(data.password || "");
+      setGender(data.gender || "");
+
+      if (typeof data.profession_area === "string") {
+        const category = fetchedCategories.find(
+          (c) => c.display_name === data.profession_area
+        );
+        if (category) {
+          setProfessionArea(category.id);
+          const filtered = fetchedAllServices.filter(
+            (service) => service.category.id === category.id
+          );
+          setFilteredServices(filtered);
+        }
+      } else if (data.profession_area?.id) {
+        setProfessionArea(data.profession_area.id);
+        const filtered = fetchedAllServices.filter(
+          (service) => service.category.id === data.profession_area.id
+        );
+        setFilteredServices(filtered);
       }
 
-      try {
-        const response = await axios.get(
-          "https://api.peshekar.online/api/v1/profile/",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+      // Handle profession_speciality
+      if (data.profession_speciality) {
+        let foundServiceId = "";
+        let specialityDisplayName = "";
+
+        if (data.profession_speciality.id) {
+          // If it's an object with an ID (preferred)
+          foundServiceId = data.profession_speciality.id;
+          specialityDisplayName = data.profession_speciality.display_name || "";
+        } else if (typeof data.profession_speciality === "string") {
+          // If it's a display name string
+          specialityDisplayName = data.profession_speciality.trim();
+
+          // Try to find an exact match first (case-sensitive, trimmed)
+          let service = fetchedAllServices.find(
+            (s) => s.display_name.trim() === specialityDisplayName
+          );
+
+          // If not found, try case-insensitive match (trimmed)
+          if (!service) {
+            const normalizedSpeciality = specialityDisplayName.toLowerCase();
+            service = fetchedAllServices.find(
+              (s) =>
+                s.display_name.toLowerCase().trim() === normalizedSpeciality
+            );
           }
-        );
-        console.log("Profil məlumatları:", response.data);
 
-        const data = response.data;
-
-        let firstName = "";
-        let lastName = "";
-        if (data.full_name) {
-          const nameParts = data.full_name.split(" ");
-          firstName = nameParts[0] || "";
-          lastName = nameParts.slice(1).join(" ") || "";
-        }
-
-        setUserData(data);
-
-        const formattedWorkImages =
-          data.work_images?.map((item) => {
-            const url = item.replace("İş Şəkli ", "");
-            return {
-              url: url,
-              name: url.split("/").pop(),
-            };
-          }) || [];
-
-        setUploadedImages(formattedWorkImages);
-
-        setFirstName(firstName);
-        setLastName(lastName);
-        setBirthDate(data.birth_date ? new Date(data.birth_date) : null);
-        setMobileNumber(data.mobile_number || "");
-        setPassword(data.password || "");
-        setGender(data.gender || "");
-
-        setProfessionArea(data.profession_area?.id || "");
-
-        const specialization = data.profession_speciality;
-        if (typeof specialization === "object") {
-          setProfessionSpecialization(specialization.id || "");
-        } else if (data.profession_speciality_other) {
-          setProfessionSpecialization("other");
-          setOtherSpecializationInput(data.profession_speciality_other);
-        } else {
-          setProfessionSpecialization(specialization || "");
-        }
-        setWorkExperience(data.experience_years || "");
-        setEducationLevel(data.education || "");
-        setEducationSpecialization(data.education_speciality || "");
-        setNote(data.note || "");
-
-        setLanguages(
-          data.languages
-            ?.map((lang) => {
-              if (typeof lang === "object") {
-                return lang.id;
+          // If still not found, try matching against "Service Name (Category Name)" format
+          if (!service) {
+            service = fetchedAllServices.find((s) => {
+              // Ensure s.category exists before accessing display_name
+              if (s.category && s.category.display_name) {
+                const fullDisplayName = `${s.display_name.trim()} (${s.category.display_name.trim()})`;
+                return (
+                  fullDisplayName.toLowerCase() ===
+                  specialityDisplayName.toLowerCase()
+                );
               }
-              const langObj = language.find((l) => l.display_name === lang);
-              return langObj ? langObj.id : null;
-            })
-            .filter(Boolean) || []
-        );
+              return false;
+            });
+          }
 
-        setProfileImageSrc(
-          data.profile_image || "/placeholder.svg?height=120&width=120"
-        );
+          // If still not found, try matching just the service name part from "Service Name (Category Name)"
+          if (
+            !service &&
+            specialityDisplayName.includes("(") &&
+            specialityDisplayName.includes(")")
+          ) {
+            const serviceNameOnly = specialityDisplayName
+              .substring(0, specialityDisplayName.indexOf("("))
+              .trim();
+            service = fetchedAllServices.find(
+              (s) =>
+                s.display_name.toLowerCase().trim() ===
+                serviceNameOnly.toLowerCase()
+            );
+          }
 
-        if (data.cities || data.districts) {
-          const selectedCities = Array.isArray(data.cities)
-            ? data.cities
-            : [data.cities].filter(Boolean);
-          const selectedDistricts = Array.isArray(data.districts)
-            ? data.districts
-            : [data.districts].filter(Boolean);
-
-          setCitiesForShow({
-            cities: selectedCities.map((city) => ({
-              id: city.id,
-              display_name: city.display_name,
-            })),
-            districts: selectedDistricts.map((district) => ({
-              id: district.id,
-              display_name: district.display_name,
-            })),
-          });
+          if (service) {
+            foundServiceId = service.id;
+          }
         }
-        setSocialLinks({
-          facebook: data.facebook || "",
-          instagram: data.instagram || "",
-          tiktok: data.tiktok || "",
-          linkedin: data.linkedin || "",
-        });
-      } catch (error) {
-        console.error("Profil məlumatları yüklənərkən xəta:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchUserData();
-  }, []);
+        setProfessionSpecialization(foundServiceId);
+        setOtherSpecializationInput(""); // "Digər" option and input are removed
+      } else {
+        setProfessionSpecialization("");
+        setOtherSpecializationInput("");
+      }
+
+      setWorkExperience(data.experience_years || "");
+      setEducationLevel(data.education || "");
+      setEducationSpecialization(data.education_speciality || "");
+      setNote(data.note || "");
+
+      setLanguages(
+        data.languages
+          ?.map((lang) => {
+            if (typeof lang === "string") {
+              const langObj = fetchedLanguages.find(
+                (l) => l.display_name === lang
+              );
+              return langObj ? langObj.id : null;
+            }
+            return lang.id || null;
+          })
+          .filter(Boolean) || []
+      );
+      setProfileImageSrc(
+        data.profile_image || "/placeholder.svg?height=120&width=120"
+      );
+
+      if (data.cities || data.districts) {
+        const allAvailableCities = fetchedLocations; // 'location' state holds data from /api/v1/cities/
+        const allAvailableDistricts = [...districts, ...bakuDistricts]; // Combine all districts
+
+        const selectedCities = Array.isArray(data.cities)
+          ? data.cities
+              .map((cityName) => {
+                const cityObj = allAvailableCities.find(
+                  (c) => c.display_name === cityName
+                );
+                return cityObj
+                  ? { id: cityObj.id, display_name: cityObj.display_name }
+                  : null;
+              })
+              .filter(Boolean)
+          : [];
+
+        const selectedDistricts = Array.isArray(data.districts)
+          ? data.districts
+              .map((districtName) => {
+                const districtObj = allAvailableDistricts.find(
+                  (d) => d.display_name === districtName
+                );
+                return districtObj
+                  ? {
+                      id: districtObj.id,
+                      display_name: districtObj.display_name,
+                    }
+                  : null;
+              })
+              .filter(Boolean)
+          : [];
+
+        setCitiesForShow({
+          cities: selectedCities,
+          districts: selectedDistricts,
+        });
+      }
+
+      setSocialLinks({
+        facebook: data.facebook || "",
+        instagram: data.instagram || "",
+        tiktok: data.tiktok || "",
+        linkedin: data.linkedin || "",
+      });
+    } catch (error) {
+      console.error("Profil məlumatları yüklənərkən xəta:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     console.log(professionSpecialization);
@@ -299,6 +404,20 @@ export default function Edit() {
     }
   };
 
+  useEffect(() => {
+    fetch("https://api.peshekar.online/api/v1/districts/")
+      .then((res) => res.json())
+      .then((data) => {
+        const baku = data.find((item) => item.display_name === "Bakı");
+        console.log(data);
+        if (baku && baku.sub_districts) {
+          setBakuDistricts(baku.sub_districts);
+        }
+        const filtered = data.filter((item) => item.display_name !== "Bakı");
+        setDistricts(filtered);
+      });
+  }, []);
+
   const updateProfile = async () => {
     const token = localStorage.getItem("authToken");
 
@@ -320,24 +439,15 @@ export default function Edit() {
     if (gender !== userData.gender)
       formData.append("gender", genderMap[gender]);
 
-    if (mobileNumber !== userData.mobile_number?.replace("+994", "")) {
-      formData.append("mobile_number", `+994${mobileNumber}`);
+    if (mobileNumber !== userData.mobile_number) {
+      formData.append("mobile_number", `${mobileNumber}`);
     }
 
     if (professionArea !== userData.profession_area?.id) {
       formData.append("profession_area", professionArea);
     }
 
-    if (professionSpecialization === "other") {
-      if (otherSpecializationInput !== userData.profession_speciality_other) {
-        formData.append(
-          "profession_speciality_other",
-          otherSpecializationInput
-        );
-      }
-    } else if (
-      professionSpecialization !== userData.profession_speciality?.id
-    ) {
+    if (professionSpecialization !== userData.profession_speciality?.id) {
       formData.append("profession_speciality", professionSpecialization);
     }
 
@@ -415,12 +525,7 @@ export default function Edit() {
     console.log("birth_date:", formattedBirthDate);
     console.log("gender:", gender.toUpperCase());
     console.log("mobile_number:", mobileNumber);
-    console.log(
-      "profession_speciality:",
-      professionSpecialization === "other"
-        ? otherSpecializationInput
-        : professionSpecialization
-    );
+    console.log("profession_speciality:", professionSpecialization);
     console.log("experience_years:", workExperience);
     console.log("education:", educationLevel);
     console.log("education_speciality:", educationSpecialization);
@@ -627,12 +732,6 @@ export default function Edit() {
       setProfessionSpecializationError("Zəhmət olmasa, peşə ixtisasını seçin.");
       return false;
     }
-    if (specialization === "other" && !otherSpecializationInput.trim()) {
-      setProfessionSpecializationError(
-        "Zəhmət olmasa, digər peşə ixtisasını daxil edin."
-      );
-      return false;
-    }
     setProfessionSpecializationError("");
     return true;
   };
@@ -767,10 +866,6 @@ export default function Edit() {
     setProfessionSpecializationError("");
   };
 
-  const handleOtherSpecializationInputBlur = () => {
-    validateProfessionSpecialization("other");
-  };
-
   const handleWorkExperienceChange = (e) => {
     setWorkExperience(e.target.value);
     setWorkExperienceError("");
@@ -820,7 +915,7 @@ export default function Edit() {
   };
 
   const handleLanguageSkillChange = (e) => {
-    const langId = parseInt(e.target.value, 10);
+    const langId = Number.parseInt(e.target.value, 10);
     if (isNaN(langId)) return;
 
     if (e.target.checked) {
@@ -841,24 +936,12 @@ export default function Edit() {
       console.log(data);
       setLocation(data);
       console.log(data);
+      return data;
     } catch (error) {
       console.error("Şəhərləri yükləmək mümkün olmadı:", error);
+      return [];
     }
   }
-
-  useEffect(() => {
-    fetch("https://api.peshekar.online/api/v1/districts/") // Removed extra slash
-      .then((res) => res.json())
-      .then((data) => {
-        const baku = data.find((item) => item.display_name === "Bakı");
-        console.log(data);
-        if (baku && baku.sub_districts) {
-          setBakuDistricts(baku.sub_districts);
-        }
-        const filtered = data.filter((item) => item.display_name !== "Bakı");
-        setCities(filtered);
-      });
-  }, []);
 
   const toggleBaku = () => {
     setIsBakuOpen((prev) => !prev);
@@ -875,8 +958,11 @@ export default function Edit() {
 
       setCategories(uniqueCategories);
       setAllServices(data);
+
+      return { categories: uniqueCategories, services: data };
     } catch (error) {
-      console.error("Şəhərləri yükləmək mümkün olmadı:", error);
+      console.error("Kateqoriyalar yüklənərkən xəta:", error);
+      return { categories: [], services: [] };
     }
   }
 
@@ -906,16 +992,33 @@ export default function Edit() {
       const data = await res.json();
       setLanguage(data);
       console.log("Fetched languages:", data);
+      return data;
     } catch (error) {
       console.error("Dilləri yükləmək mümkün olmadı:", error);
+      return [];
     }
   }
 
   useEffect(() => {
-    handleLocation();
-    handleCategories();
-    // handleServicies();
-    handleLanguage();
+    const fetchAllData = async () => {
+      try {
+        const fetchedLanguages = await handleLanguage();
+        const { categories: fetchedCategories, services: fetchedAllServices } =
+          await handleCategories();
+        const fetchedLocations = await handleLocation();
+
+        await fetchUserData(
+          fetchedCategories,
+          fetchedAllServices,
+          fetchedLanguages,
+          fetchedLocations
+        );
+      } catch (error) {
+        console.error("İlkin məlumat yükləmə xətası:", error);
+      }
+    };
+
+    fetchAllData();
   }, []);
 
   const handleSubmit = (e) => {
@@ -962,10 +1065,7 @@ export default function Edit() {
         password,
         gender,
         professionArea,
-        professionSpecialization:
-          professionSpecialization === "other"
-            ? otherSpecializationInput
-            : professionSpecialization,
+        professionSpecialization: professionSpecialization,
         workExperience,
         selectedCities: citiesForShow.cities.map((c) => c.id),
         selectedDistricts: citiesForShow.districts.map((d) => d.id),
@@ -1051,7 +1151,7 @@ export default function Edit() {
         setProfileImageSrc(reader.result);
         handleClosePhotoPopup();
       };
-      reader.readAsDataURL(selectedImageFile);
+      reader.readAsDataURL(selectedFile);
     } else {
       handleClosePhotoPopup();
     }
@@ -1144,7 +1244,7 @@ export default function Edit() {
 
   function dataURLtoBlob(dataURL) {
     const byteString = atob(dataURL.split(",")[1]);
-    const mimeString = dataURL.split(",")[0].split(":")[1].split(";")[0];
+    const mimeString = dataURL.split(",")[0].split(":")[1].split(";");
     const ab = new ArrayBuffer(byteString.length);
     const ia = new Uint8Array(ab);
     for (let i = 0; i < byteString.length; i++) {
@@ -1203,7 +1303,7 @@ export default function Edit() {
       prevSelectedCities.filter((city) => city !== cityToRemove)
     );
   };
-  // Filter Cities
+
   const handleCitySearchChange = (event) => {
     setCitySearchTerm(event.target.value);
   };
@@ -1271,10 +1371,6 @@ export default function Edit() {
   };
 
   console.log("uploadedImages:", uploadedImages);
-  const [citiesForShow, setCitiesForShow] = useState({
-    cities: [],
-    districts: [],
-  });
   const handleChildData = (dataFromChild) => {
     console.log("Data from CitySelectionPopup:", dataFromChild);
     // setFormData((prev) => ({ // formData is not defined in this scope
@@ -1307,10 +1403,11 @@ export default function Edit() {
           <div className="flex gap-[1.4rem] items-center">
             <div className="relative">
               <img
-                src={profileImageSrc || "/placeholder.svg?height=120&width=120"}
+                src={profileImageSrc || "/placeholder.svg"}
                 alt="profil-image"
-                className="w-[120px] h-[120px] object-cover object-[80%_20%] rounded-full"
+                className="w-[120px] h-[120px] object-cover rounded-full border-2 border-white shadow-md"
               />
+
               <img
                 src={addsvg || "/placeholder.svg"}
                 alt="add-image"
@@ -1338,24 +1435,24 @@ export default function Edit() {
             </div>
             <div
               className={`
-          relative w-[3rem] h-[1.5rem] cursor-pointer rounded-full flex items-center transition-colors duration-300
-          ${
-            isProfileVisible
-              ? "bg-[#CDE4F2] justify-end"
-              : "bg-gray-300 justify-start"
-          }
-        `}
+      relative w-[3rem] h-[1.5rem] cursor-pointer rounded-full flex items-center transition-colors duration-300
+      ${
+        isProfileVisible
+          ? "bg-[#CDE4F2] justify-end"
+          : "bg-gray-300 justify-start"
+      }
+    `}
               onClick={handleToggleProfile}
             >
               <div
                 className={`
-            w-[1.3rem] h-[1.2rem] rounded-full shadow-md transition-transform duration-300
-            ${
-              isProfileVisible
-                ? "bg-[#3187B8] transform translate-x-[0.3rem] mr-1"
-                : "bg-white transform translate-x-[0.15rem]"
-            }
-          `}
+        w-[1.3rem] h-[1.2rem] rounded-full shadow-md transition-transform duration-300
+        ${
+          isProfileVisible
+            ? "bg-[#3187B8] transform translate-x-[0.3rem] mr-1"
+            : "bg-white transform translate-x-[0.15rem]"
+        }
+      `}
               ></div>
             </div>
           </div>
@@ -1378,7 +1475,6 @@ export default function Edit() {
               className="mt-5 flex justify-between flex-wrap gap-7"
               onSubmit={handleSubmit}
             >
-              {/* First Name Field */}
               <div>
                 <div className="flex gap-[4px]">
                   <img
@@ -1686,8 +1782,7 @@ export default function Edit() {
                       professionAreaError
                         ? "border-red-500"
                         : "border-[#C3C8D1]"
-                    } 
-    rounded-lg outline-none pr-10 pl-3 text-[#1A4862] font-semibold appearance-none`}
+                    } rounded-lg outline-none pr-10 pl-3 text-[#1A4862] font-semibold appearance-none`}
                     value={professionArea}
                     onChange={handleProfessionAreaChange}
                     onBlur={handleProfessionAreaBlur}
@@ -1750,7 +1845,6 @@ export default function Edit() {
                         {service.display_name}
                       </option>
                     ))}
-                    {professionArea && <option value="other">Digər</option>}
                   </select>
 
                   <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
@@ -1767,23 +1861,6 @@ export default function Edit() {
                     </svg>
                   </div>
                 </div>
-                {professionSpecialization === "other" && (
-                  <div className="mt-2">
-                    <input
-                      type="text"
-                      maxLength={50}
-                      placeholder="Peşə ixtisasını daxil edin"
-                      className={`w-[27.5rem] h-[3rem] border ${
-                        professionSpecializationError
-                          ? "border-red-500"
-                          : "border-[#C3C8D1]"
-                      } rounded-lg outline-none p-2 text-[#1A4862] font-semibold`}
-                      value={otherSpecializationInput}
-                      onChange={handleOtherSpecializationInputChange}
-                      onBlur={handleOtherSpecializationInputBlur}
-                    />
-                  </div>
-                )}
 
                 {professionSpecializationError && (
                   <p className="text-[#EF4444] text-[.8rem] mt-1">
@@ -2129,7 +2206,7 @@ export default function Edit() {
                                 {...provided.dragHandleProps}
                               >
                                 <img
-                                  src={image.url}
+                                  src={image.url || "/placeholder.svg"}
                                   alt={`uploaded-image-${index}`}
                                   className="w-full h-full object-cover"
                                   draggable={false}

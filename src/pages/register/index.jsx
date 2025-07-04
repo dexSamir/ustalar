@@ -1,33 +1,17 @@
-"use client";
-
 import { useNavigate } from "react-router-dom";
-
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-
 import React, { useRef, useState, useEffect, useCallback } from "react";
-
 import { Eye, EyeOff, XCircle } from "lucide-react";
-
 import { az } from "date-fns/locale";
-
 import DatePicker from "react-datepicker";
-
 import "react-datepicker/dist/react-datepicker.css";
-
 import CitySelectionPopup from "../../components/CitySelectionPopup";
-
 import ImageEditor from "../../components/ImageEditor";
-
 import axios from "axios";
-
 import { format, subYears, isValid, parseISO } from "date-fns";
-
 import Swal from "sweetalert2";
-
 import backgroundPng from "../../assets/background.png";
-
 import Footer from "../../components/Footer";
-
 const cities = [
   "Ağcabədi",
   "Ağdam",
@@ -1333,7 +1317,7 @@ function Register() {
                   type="text"
                   placeholder="Təhsil ixtisasını daxil edin"
                   name="educationField"
-                  className="w-full border border-gray-300 bg-white p-2 rounded-md text-sm text-gray-600 outline-gray-400"
+                  className="w-full border border-gray-300 bg-white p-2 rounded-md text-sm text-gray-600 outline-gray-400 cursor-default"
                   value={formData.educationField}
                   onChange={handleChange}
                   onBlur={handleBlurValidation}
@@ -1401,15 +1385,10 @@ function Register() {
             </div>
             {formData.profile_image && (
               <div className="flex flex-col items-start mt-2">
-                {" "}
                 <img
-                  src={
-                    URL.createObjectURL(formData.profile_image) ||
-                    "/placeholder.svg" ||
-                    "/placeholder.svg"
-                  }
+                  src={URL.createObjectURL(formData.profile_image)}
                   alt="Profil şəkli"
-                  className="w-32 h-32 object-cover rounded-full"
+                  className="w-32 h-32 object-cover border border-gray-300 rounded-md"
                 />
                 <div className="flex gap-2 mt-2">
                   <button
