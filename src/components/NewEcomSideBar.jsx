@@ -15,6 +15,12 @@ const NewEcomSideBar = ({ onFilterChange }) => {
     const [selectedRatings, setSelectedRatings] = useState([]);
     const [selectedExperience, setSelectedExperience] = useState([]);
 
+    // Search ucun stateler
+    const [categorySearch, setCategorySearch] = useState("");
+    const [citySearch, setCitySearch] = useState("");
+    const [ratingSearch, setRatingSearch] = useState("");
+    const [experienceSearch, setExperienceSearch] = useState("");
+
     const prevFiltersRef = useRef({
         categories: [],
         cities: [],
@@ -130,6 +136,7 @@ const NewEcomSideBar = ({ onFilterChange }) => {
 
     return (
         <div className='ecom-sidebar w-[223px] flex flex-col gap-2.5'>
+            {/* Kategoriyalar */}
             <div className="sidebar-job">
                 <button
                     onClick={() => setIsCategoryOpen(!isCategoryOpen)}
@@ -140,30 +147,43 @@ const NewEcomSideBar = ({ onFilterChange }) => {
                         <MdOutlineKeyboardArrowUp className='text-2xl text-[#7A8599]' />
                     ) : (
                         <MdOutlineKeyboardArrowDown className='text-2xl text-[#7A8599]' />
-                    )}</button>
+                    )}
+                </button>
                 {isCategoryOpen && (
                     <form action="" className='flex flex-col'>
-                        {/* <input type="text" placeholder='Peşə daxil edin' className='border-1 border-[#404653] rounded-[7px] p-2.5 my-2.5 font-semibold text-[16px] outline-0' /> */}
-                        {categories.map(category => (
-                            <div key={category.id} className='flex items-center gap-2 p-4'>
-                                <input
-                                    type="checkbox"
-                                    id={`category-${category.id}`}
-                                    checked={selectedCategories.includes(category.id)}
-                                    onChange={() => handleCategoryChange(category.id)}
-                                    className='size-5' />
-                                <label
-                                    htmlFor={`category-${category.id}`}
-                                    className='text-[16px] font-semibold'
-                                >
-                                    {category.display_name || category.name}
-                                </label>
-                            </div>
-                        ))}
+                        <input
+                            type="text"
+                            placeholder='Peşə daxil edin'
+                            className='border-1 border-[#404653] rounded-[7px] p-2.5 my-2.5 font-semibold text-[16px] outline-0'
+                            value={categorySearch}
+                            onChange={e => setCategorySearch(e.target.value)}
+                        />
+                        {categories
+                            .filter(category =>
+                                (category.display_name || category.name)
+                                    .toLowerCase()
+                                    .includes(categorySearch.toLowerCase())
+                            )
+                            .map(category => (
+                                <div key={category.id} className='flex items-center gap-1 p-2'>
+                                    <input
+                                        type="checkbox"
+                                        id={`category-${category.id}`}
+                                        checked={selectedCategories.includes(category.id)}
+                                        onChange={() => handleCategoryChange(category.id)}
+                                        className='size-5' />
+                                    <label
+                                        htmlFor={`category-${category.id}`}
+                                        className='text-[15px] font-normal'
+                                    >
+                                        {category.display_name || category.name}
+                                    </label>
+                                </div>
+                            ))}
                     </form>
                 )}
-
             </div>
+            {/* Seherler */}
             <div className="sidebar-city">
                 <button
                     onClick={() => setIsCityOpen(!isCityOpen)}
@@ -178,28 +198,39 @@ const NewEcomSideBar = ({ onFilterChange }) => {
                 </button>
                 {isCityOpen && (
                     <form action="" className='flex flex-col'>
-                        {/* <input type="text" placeholder='Şəhər daxil edin' className='border-1 border-[#404653] rounded-[7px] p-2.5 my-2.5 font-semibold text-[16px] outline-0' /> */}
-                        {cities.map(city => (
-                            <div key={city.id} className='flex items-center gap-2 p-4'>
-                                <input
-                                    type="checkbox"
-                                    id={`city-${city.id}`}
-                                    checked={selectedCities.includes(city.id)}
-                                    onChange={() => handleCityChange(city.id)}
-                                    className='size-5' />
-                                <label
-                                    htmlFor={`city-${city.id}`}
-                                    className='text-[16px] font-semibold'
-                                >
-                                    {city.display_name || city.name}
-                                </label>
-                            </div>
-                        ))}
-
+                        <input
+                            type="text"
+                            placeholder='Şəhər daxil edin'
+                            className='border-1 border-[#404653] rounded-[7px] p-2.5 my-2.5 font-semibold text-[16px] outline-0'
+                            value={citySearch}
+                            onChange={e => setCitySearch(e.target.value)}
+                        />
+                        {cities
+                            .filter(city =>
+                                (city.display_name || city.name)
+                                    .toLowerCase()
+                                    .includes(citySearch.toLowerCase())
+                            )
+                            .map(city => (
+                                <div key={city.id} className='flex items-center gap-1 p-2'>
+                                    <input
+                                        type="checkbox"
+                                        id={`city-${city.id}`}
+                                        checked={selectedCities.includes(city.id)}
+                                        onChange={() => handleCityChange(city.id)}
+                                        className='size-5' />
+                                    <label
+                                        htmlFor={`city-${city.id}`}
+                                        className='text-[15px] font-normal'
+                                    >
+                                        {city.display_name || city.name}
+                                    </label>
+                                </div>
+                            ))}
                     </form>
                 )}
-
             </div>
+            {/* Reytingler */}
             <div className="sidebar-rating">
                 <button
                     onClick={() => setIsRatingOpen(!isRatingOpen)}
@@ -214,24 +245,35 @@ const NewEcomSideBar = ({ onFilterChange }) => {
                 </button>
                 {isRatingOpen && (
                     <form action="" className='flex flex-col'>
-                        {ratingOptions.map((option) => (
-                            <div key={option.value} className='flex items-center gap-2 p-4'>
-                                <input
-                                    type="checkbox"
-                                    id={`rating-${option.value}`}
-                                    checked={selectedRatings.includes(option.value)}
-                                    onChange={() => handleRatingChange(option.value)}
-                                    className='size-5'
-                                />
-                                <label htmlFor={`rating-${option.value}`} className='text-[16px] font-semibold'>
-                                    {option.label}
-                                </label>
-                            </div>
-                        ))}
+                        <input
+                            type="text"
+                            placeholder='Reytinq axtar'
+                            className='border-1 border-[#404653] rounded-[7px] p-2.5 my-2.5 font-semibold text-[16px] outline-0'
+                            value={ratingSearch}
+                            onChange={e => setRatingSearch(e.target.value)}
+                        />
+                        {ratingOptions
+                            .filter(option =>
+                                option.label.toLowerCase().includes(ratingSearch.toLowerCase())
+                            )
+                            .map((option) => (
+                                <div key={option.value} className='flex items-center gap-1 p-2'>
+                                    <input
+                                        type="checkbox"
+                                        id={`rating-${option.value}`}
+                                        checked={selectedRatings.includes(option.value)}
+                                        onChange={() => handleRatingChange(option.value)}
+                                        className='size-5'
+                                    />
+                                    <label htmlFor={`rating-${option.value}`} className='text-[15px] font-normal'>
+                                        {option.label}
+                                    </label>
+                                </div>
+                            ))}
                     </form>
                 )}
-
             </div>
+            {/* Tecrubeler */}
             <div className="sidebar-year">
                 <button
                     onClick={() => setIsExperienceOpen(!isExperienceOpen)}
@@ -246,23 +288,33 @@ const NewEcomSideBar = ({ onFilterChange }) => {
                 </button>
                 {isExperienceOpen && (
                     <form action="" className='flex flex-col'>
-                        {experienceOptions.map((option) => (
-                            <div key={option.value} className='flex items-center gap-2 p-4'>
-                                <input
-                                    type="checkbox"
-                                    id={`experience-${option.value}`}
-                                    checked={selectedExperience.includes(option.value)}
-                                    onChange={() => handleExperienceChange(option.value)}
-                                    className='size-5'
-                                />
-                                <label htmlFor={`experience-${option.value}`} className='text-[16px] font-semibold'>
-                                    {option.label}
-                                </label>
-                            </div>
-                        ))}
+                        <input
+                            type="text"
+                            placeholder='Təcrübə ili axtar'
+                            className='border-1 border-[#404653] rounded-[7px] p-2.5 my-2.5 font-semibold text-[16px] outline-0'
+                            value={experienceSearch}
+                            onChange={e => setExperienceSearch(e.target.value)}
+                        />
+                        {experienceOptions
+                            .filter(option =>
+                                option.label.toLowerCase().includes(experienceSearch.toLowerCase())
+                            )
+                            .map((option) => (
+                                <div key={option.value} className='flex items-center gap-1 p-2'>
+                                    <input
+                                        type="checkbox"
+                                        id={`experience-${option.value}`}
+                                        checked={selectedExperience.includes(option.value)}
+                                        onChange={() => handleExperienceChange(option.value)}
+                                        className='size-5'
+                                    />
+                                    <label htmlFor={`experience-${option.value}`} className='text-[15px] font-normal'>
+                                        {option.label}
+                                    </label>
+                                </div>
+                            ))}
                     </form>
                 )}
-
             </div>
         </div>
     )

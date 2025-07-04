@@ -16,7 +16,7 @@ export default function EcomCard({
     cityNames && cityNames.length > 0 ? cityNames.join(", ") : "Yer yoxdur";
 
   return (
-<div className="w-full max-w-[300px] mx-auto h-[400px] rounded-lg shadow-md overflow-hidden bg-white flex flex-col">
+    <div className="w-full max-w-[300px] mx-auto h-[400px] rounded-lg shadow-md overflow-hidden bg-white flex flex-col">
       <div className="relative w-full h-48">
         <img
           src={
@@ -28,22 +28,23 @@ export default function EcomCard({
         />
       </div>
       <div className="p-4 flex flex-col flex-grow">
-      
         <div className="flex items-center justify-between mb-1">
           <h3 className="font-bold text-xl">
-            {professional.full_name}
+            {professional.profession_speciality || categoryName}
           </h3>
-          <div className="flex items-center">
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
-            <span className="text-sm font-semibold">{displayRating}</span>
-            <span className="text-sm text-gray-500 ml-1">
-              ({displayReviewCount})
-            </span>
-          </div>
+          {professional.rating > 0 && (
+            <div className="flex items-center">
+              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
+              <span className="text-sm font-semibold">{displayRating}</span>
+              <span className="text-sm text-gray-500 ml-1">
+                ({displayReviewCount})
+              </span>
+            </div>
+          )}
         </div>
-        
+
         <p className="text-gray-600 text-sm mb-2">
-          {categoryName}
+          {professional.full_name}
           {specialityName && ` - ${specialityName}`}
         </p>
 
@@ -68,7 +69,7 @@ export default function EcomCard({
             Ətraflı
           </button>
         </div>
-      </div> 
+      </div>
     </div>
   );
 }

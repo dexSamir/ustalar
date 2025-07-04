@@ -269,13 +269,11 @@ export default function Ecom() {
               <div className="flex justify-end items-center w-full h-full">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="relative w-56 p-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50"
+                  className="relative w-56 p-3 bg-white border border-gray-300 rounded-lg shadow hover:shadow-md hover:bg-gray-50 transition-shadow duration-200"
+                  style={{ boxShadow: '0 1px 4px 0 rgba(60, 60, 60, 0.08)' }}
                 >
                   <div className="flex flex-col items-start pr-8">
                     <p className="text-lg font-bold">Sırala</p>
-                    <span className="block text-xs text-gray-600 font-normal mt-2">
-                      {selectedSort}
-                    </span>
                   </div>
                   <ArrowUpDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600" />
                 </button>
