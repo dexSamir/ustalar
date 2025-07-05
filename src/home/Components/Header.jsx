@@ -37,7 +37,9 @@ function Header() {
 
     const fetchCities = async () => {
       try {
-        const response = await fetch("https://api.peshekar.online/api/v1/cities/");
+        const response = await fetch(
+          "https://api.peshekar.online/api/v1/cities/"
+        );
         if (!response.ok) throw new Error("Şəhərlər yüklənə bilmədi");
 
         const data = await response.json();
@@ -93,15 +95,16 @@ function Header() {
 
           <div className="city-selector-wrapper">
             {isLoadingCities ? (
-              <select disabled>
+              <select disabled class="select">
                 <option>Yüklənir...</option>
               </select>
             ) : error ? (
-              <select disabled>
+              <select disabled class="select">
                 <option>{error}</option>
               </select>
             ) : (
               <select
+                class="select"
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
               >
@@ -109,7 +112,11 @@ function Header() {
                   Şəhər seçin
                 </option>
                 {cities.map((city) => (
-                  <option className="option_select" key={city.id} value={city.id.toString()}>        
+                  <option
+                    className="option_select"
+                    key={city.id}
+                    value={city.id.toString()}
+                  >
                     {city.display_name}
                   </option>
                 ))}
