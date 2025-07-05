@@ -12,6 +12,7 @@ import { format, subYears, isValid, parseISO } from "date-fns";
 import Swal from "sweetalert2";
 import backgroundPng from "../../assets/background.png";
 import Footer from "../../components/Footer";
+
 const cities = [
   "Ağcabədi",
   "Ağdam",

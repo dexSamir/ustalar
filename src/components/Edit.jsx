@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { az } from "date-fns/locale";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import { parse, subYears, isValid } from "date-fns";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import addsvg from "../assets/add.svg";
@@ -33,6 +32,31 @@ import axios from "axios";
 import Sidebar from "../sidebar";
 import CitySelectionPopup from "./CitySelectionPopup";
 import { Eye, EyeOff } from "lucide-react";
+
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
+const urlToBase64 = async (url) => {
+  try {
+    const response = await fetch(url, { mode: "cors" });
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch image from URL: ${url} Status: ${response.status}`
+      );
+    }
+    const blob = await response.blob();
+    return await fileToBase64(blob);
+  } catch (error) {
+    console.error("Error converting URL to base64:", error);
+    return null;
+  }
+};
 
 export default function Edit() {
   const navigate = useNavigate();
@@ -175,16 +199,79 @@ export default function Edit() {
 
       setUserData(data);
 
-      const formattedWorkImages =
-        data.work_images?.map((item) => {
-          const url = item.replace("İş Şəkli ", "");
-          return {
-            url: url,
-            name: url.split("/").pop(),
-          };
-        }) || [];
+      const masterId = data.id;
+      let initialUploadedImages = [];
 
-      setUploadedImages(formattedWorkImages);
+      if (data.work_images && Array.isArray(data.work_images)) {
+        initialUploadedImages = data.work_images
+          .map((imageString) => {
+            const cleanUrlMatch = imageString.match(/(https?:\/\/[^\s]+)/);
+            const cleanUrl = cleanUrlMatch ? cleanUrlMatch[0] : null;
+            if (cleanUrl) {
+              console.log("Parsed URL from profile:", cleanUrl);
+              return {
+                url: cleanUrl,
+                name: cleanUrl.split("/").pop(),
+                id: null,
+                file: null,
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
+      }
+      console.log(
+        "Initial images from profile data (before ID merge):",
+        initialUploadedImages
+      );
+
+      if (masterId) {
+        try {
+          const workImagesWithIdsResponse = await axios.get(
+            `https://api.peshekar.online/api/v1/professionals/${masterId}/images`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const imagesWithIds = workImagesWithIdsResponse.data.filter(
+            (item) => item.image
+          );
+          console.log(
+            "Images with IDs from professionals/images endpoint:",
+            imagesWithIds
+          );
+
+          const idMap = new Map();
+          imagesWithIds.forEach((item) => {
+            console.log("URL from /images endpoint:", item.image_url);
+            idMap.set(item.image, item.id);
+          });
+
+          const finalUploadedImages = initialUploadedImages.map((img) => {
+            const id = idMap.get(img.url);
+            console.log(`Matching ${img.url} with ID: ${id}`);
+            return {
+              ...img,
+              id: id || null,
+            };
+          });
+          setUploadedImages(finalUploadedImages);
+          console.log(
+            "Final uploaded images after merging IDs:",
+            finalUploadedImages
+          );
+        } catch (error) {
+          console.error(
+            "Error fetching work images with IDs from /professionals/images:",
+            error
+          );
+          setUploadedImages(initialUploadedImages);
+        }
+      } else {
+        setUploadedImages(initialUploadedImages);
+      }
 
       setFirstName(firstName);
       setLastName(lastName);
@@ -422,11 +509,10 @@ export default function Edit() {
       formData.append("last_name", lastName);
     }
 
-    const formattedBirthDate = new Date(birthDate).toISOString().split("T")[0];
+    const formattedBirthDate = birthDate ? format(birthDate, "yyyy-MM-dd") : "";
 
-    if (birthDate !== userData.birth_date) {
-      const formattedDate = birthDate ? format(birthDate, "yyyy-MM-dd") : "";
-      formData.append("birth_date", formattedDate);
+    if (formattedBirthDate !== userData.birth_date) {
+      formData.append("birth_date", formattedBirthDate);
     }
     if (gender !== userData.gender)
       formData.append("gender", genderMap[gender]);
@@ -472,31 +558,70 @@ export default function Edit() {
         formData.append("languages", langId.toString());
       });
 
+    formData.delete("cities");
+    formData.delete("districts");
+
     citiesForShow.cities.forEach((city) => {
-      if (!userData.cities?.some((c) => c.id === city.id)) {
-        formData.append("cities", Number(city.id));
-      }
+      formData.append("cities", Number(city.id));
     });
 
-    citiesForShow.districts.forEach((district) =>
-      formData.append("districts", Number(district.id))
-    );
-
-    userData.cities?.forEach((city) => {
-      if (!citiesForShow.cities.some((c) => c.id === city.id)) {
-        formData.append("remove_cities", Number(city.id));
-      }
+    citiesForShow.districts.forEach((district) => {
+      formData.append("districts", Number(district.id));
     });
 
     if (selectedImageFile) {
       formData.append("profile_image", selectedImageFile);
     }
 
-    uploadedImages.forEach((image) => {
+    formData.delete("work_images");
+
+    const workImagePromises = uploadedImages.map(async (image) => {
       if (image.file instanceof File) {
-        formData.append("work_images", image.file);
+        console.log("DEBUG: Appending new file directly:", image.name);
+        return image.file;
+      } else if (image.url && image.id !== null) {
+        console.log(
+          "DEBUG: Fetching existing image URL and converting to File:",
+          image.url
+        );
+        try {
+          const response = await fetch(image.url, { mode: "cors" });
+          if (!response.ok) {
+            throw new Error(
+              `Failed to fetch image from URL: ${image.url} Status: ${response.status}`
+            );
+          }
+          const blob = await response.blob();
+          const fileName =
+            image.name || image.url.split("/").pop().split("?")[0];
+          return new File([blob], fileName, { type: blob.type });
+        } catch (error) {
+          console.error(
+            "Error converting existing image URL to File object:",
+            error
+          );
+          return null;
+        }
       }
+      return null;
     });
+
+    const finalWorkImages = (await Promise.all(workImagePromises)).filter(
+      Boolean
+    );
+
+    if (finalWorkImages.length > 0) {
+      finalWorkImages.forEach((fileObject) => {
+        formData.append("work_images", fileObject);
+      });
+      console.log("DEBUG: work_images alanına bireysel File objeleri eklendi.");
+      finalWorkImages.forEach((file, index) =>
+        console.log(`DEBUG: work_images[${index}]: ${file.name} (${file.type})`)
+      );
+    } else {
+      formData.delete("work_images");
+      console.log("DEBUG: Gönderilecek work_images yok, alan silindi.");
+    }
 
     if (socialLinks.facebook !== userData.facebook) {
       formData.append("facebook", socialLinks.facebook);
@@ -511,29 +636,7 @@ export default function Edit() {
       formData.append("linkedin", socialLinks.linkedin);
     }
 
-    console.log("🟡 Form məlumatları:");
-    console.log("first_name:", firstName);
-    console.log("last_name:", lastName);
-    console.log("birth_date:", formattedBirthDate);
-    console.log("gender:", gender.toUpperCase());
-    console.log("mobile_number:", mobileNumber);
-    console.log("profession_speciality:", professionSpecialization);
-    console.log("experience_years:", workExperience);
-    console.log("education:", educationLevel);
-    console.log("education_speciality:", educationSpecialization);
-    console.log("languages:", languages);
-    console.log("profile_image:", selectedImageFile);
-    console.log("Note", note);
-    console.log(
-      "Selected Cities (IDs):",
-      citiesForShow.cities.map((c) => c.id)
-    );
-    console.log(
-      "Selected Districts (IDs):",
-      citiesForShow.districts.map((d) => d.id)
-    );
-
-    console.log("📦 formData.entries():");
+    console.log("🟡 Form məlumatları (əsas profil yeniləməsi üçün):");
     for (const pair of formData.entries()) {
       console.log(`${pair[0]}: ${pair[1]}`);
     }
@@ -550,10 +653,24 @@ export default function Edit() {
       );
       setUserData(response.data);
       setShowSaveSuccessPopup(true);
+
+      const fetchedLanguages = await handleLanguage();
+      const { categories: fetchedCategories, services: fetchedAllServices } =
+        await handleCategories();
+      const fetchedLocations = await handleLocation();
+      await fetchUserData(
+        fetchedCategories,
+        fetchedAllServices,
+        fetchedLanguages,
+        fetchedLocations
+      );
     } catch (error) {
       console.error(
         "🔴 Yeniləmə xətası:",
         error.response?.data || error.message
+      );
+      alert(
+        "Profil yenilənərkən xəta baş verdi. Zəhmət olmasa yenidən cəhd edin."
       );
     }
   };
@@ -1107,15 +1224,44 @@ export default function Edit() {
       url: URL.createObjectURL(file),
       name: file.name,
       file: file,
+      id: null,
     }));
 
     setUploadedImages((prev) => [...prev, ...files]);
   };
 
-  const handleRemoveImage = (indexToRemove) => {
-    setUploadedImages((prevImages) =>
-      prevImages.filter((_, index) => index !== indexToRemove)
-    );
+  const handleRemoveImage = async (indexToRemove) => {
+    const imageToRemove = uploadedImages[indexToRemove];
+    const token = localStorage.getItem("authToken");
+
+    if (imageToRemove && imageToRemove.id) {
+      try {
+        await axios.delete(
+          `https://api.peshekar.online/api/v1/professionals/images/${imageToRemove.id}/delete`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log(`Image with ID ${imageToRemove.id} deleted successfully.`);
+        setUploadedImages((prevImages) =>
+          prevImages.filter((_, index) => index !== indexToRemove)
+        );
+      } catch (error) {
+        console.error(
+          `Error deleting image with ID ${imageToRemove.id}:`,
+          error.response?.data || error.message
+        );
+        alert(
+          "Şəkil silinərkən xəta baş verdi. Zəhmət olmasa yenidən cəhd edin."
+        );
+      }
+    } else {
+      setUploadedImages((prevImages) =>
+        prevImages.filter((_, index) => index !== indexToRemove)
+      );
+    }
   };
 
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
@@ -1427,24 +1573,24 @@ export default function Edit() {
             </div>
             <div
               className={`
-      relative w-[3rem] h-[1.5rem] cursor-pointer rounded-full flex items-center transition-colors duration-300
-      ${
-        isProfileVisible
-          ? "bg-[#CDE4F2] justify-end"
-          : "bg-gray-300 justify-start"
-      }
-    `}
+    relative w-[3rem] h-[1.5rem] cursor-pointer rounded-full flex items-center transition-colors duration-300
+    ${
+      isProfileVisible
+        ? "bg-[#CDE4F2] justify-end"
+        : "bg-gray-300 justify-start"
+    }
+  `}
               onClick={handleToggleProfile}
             >
               <div
                 className={`
-        w-[1.3rem] h-[1.2rem] rounded-full shadow-md transition-transform duration-300
-        ${
-          isProfileVisible
-            ? "bg-[#3187B8] transform translate-x-[0.3rem] mr-1"
-            : "bg-white transform translate-x-[0.15rem]"
-        }
-      `}
+      w-[1.3rem] h-[1.2rem] rounded-full shadow-md transition-transform duration-300
+      ${
+        isProfileVisible
+          ? "bg-[#3187B8] transform translate-x-[0.3rem] mr-1"
+          : "bg-white transform translate-x-[0.15rem]"
+      }
+    `}
               ></div>
             </div>
           </div>
@@ -2182,8 +2328,12 @@ export default function Edit() {
                       >
                         {uploadedImages.map((image, index) => (
                           <Draggable
-                            key={index}
-                            draggableId={`image-${index}`}
+                            key={image.id || image.url}
+                            draggableId={
+                              image.id
+                                ? `image-${image.id}`
+                                : `image-${image.url}`
+                            }
                             index={index}
                           >
                             {(provided, snapshot) => (
